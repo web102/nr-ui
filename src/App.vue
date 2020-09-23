@@ -21,6 +21,6 @@
 
 <style scoped>
   .main{
-    height: 427px;;
+    height: 100%;
   }
 </style>

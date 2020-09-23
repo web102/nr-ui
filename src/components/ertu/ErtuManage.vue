@@ -45,13 +45,10 @@
                         <Input v-model="ertu.voltageClass" style="width:200px"/>
                     </FormItem> -->
                     <FormItem label="设备厂家">
-                        <Select v-model="ertu.manufactureId" style="width:200px">
-                            <Option :value="manufacture.id" v-for="(manufacture,index) of manufactures" :key="index">{{manufacture.name}}
-                            </Option>
-                        </Select>
+                      <Input v-model="ertu.manufacturer" style="width:200px"/>
                     </FormItem>
                     <FormItem label="设备型号">
-                        <Input v-model="ertu.modelId" style="width:200px"/>
+                        <Input v-model="ertu.model" style="width:200px"/>
                     </FormItem>
                     <!-- <FormItem label="场站类型">
                         <Input v-model="ertu.ertuType" style="width:200px"/>
@@ -75,9 +72,9 @@
                     <FormItem label="纬度">
                         <Input v-model="ertu.latitude" style="width:200px"/>
                     </FormItem> -->
-                    <FormItem label="存储容量">
-                        <Input v-model="ertu.storeCap" style="width:200px"/>
-                    </FormItem>
+                    <!--<FormItem label="存储容量">-->
+                        <!--<Input v-model="ertu.storeCap" style="width:200px"/>-->
+                    <!--</FormItem>-->
                     <!-- <FormItem label="是否使用中">
                         <Input v-model="ertu.isInUse" style="width:200px"/>
                     </FormItem> -->
@@ -92,25 +89,11 @@
         data() {
             return {
                 protocols: [],
-                manufactures: [
-                    {
-                        id: 1,
-                        name: '变电站'
-                    },
-                    {
-                        id: 2,
-                        name: '换流站'
-                    },
-                    {
-                        id: 3,
-                        name: '配电站'
-                    },
-                ],
                 ertu: {
                     ertuName: '',
                     voltageClass: '',
-                    manufactureId: '',
-                    modelId: '',
+                    manufacture: '',
+                    model: '',
                     ertuType: '',
                     protocolId: '',
                     acquiredId: '',
@@ -157,23 +140,14 @@
                     // },
                     {
                         title: '设备厂家',
-                        key: 'manufactureId',
+                        key: 'manufacturer',
                         width: 120,
                         align: 'center',
                         ellipsis: true,
-                      render: (h, params) => {
-                        var value;
-                        this.manufactures.forEach(function (element) {
-                          if (element.id == params.row.manufactureId) {
-                            value = element.name;
-                          }
-                        });
-                        return h('div',value)
-                      }
                     },
                     {
                         title: '设备型号',
-                        key: 'modelId',
+                        key: 'model',
                         width: 120,
                         align: 'center',
                         ellipsis: true
@@ -230,13 +204,13 @@
                     //     align: 'center',
                     //     ellipsis: true
                     // },
-                    {
-                        title: '存储容量',
-                        key: 'storeCap',
-                        width: 120,
-                        align: 'center',
-                        ellipsis: true
-                    },
+                    // {
+                    //     title: '存储容量',
+                    //     key: 'storeCap',
+                    //     width: 120,
+                    //     align: 'center',
+                    //     ellipsis: true
+                    // },
                     // {
                     //     title: '是否使用中',
                     //     key: 'isInUse',

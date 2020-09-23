@@ -8,44 +8,51 @@
           <Row>
             <Col span="19" push="5" style="background-color: #C9C9C9;">
               <div class="tools_top">
-                <Row>
-                  <Col span="5">
+                <Row style="height: 30px">
+                  <Col span="3">
+                    <Input type="text" id="startMark" size="small"style="width: 120px" v-model="startMark" placeholder="开始地址"/>
+                  </Col>
+                  <Col span="4">
+                    <Input type="text" id="endMark" size="small" style="width: 120px" v-model="endMark" placeholder="开始地址"/>
+                  </Col>
+                  <Col span="4">
                     <DatePicker type="datetime" size="small" placeholder="选择开始时间" @on-change="getStart"
-                                style="width: 150px"></DatePicker>
+                                style="width: 160px"></DatePicker>
                   </Col>
-                  <Col span="5">
+                  <Col span="4">
                     <DatePicker type="datetime" size="small" placeholder="选择结束时间" @on-change="getEnd"
-                                style="width: 150px"></DatePicker>
+                                style="width: 160px"></DatePicker>
                   </Col>
-                  <Col span="5">
-                    <Select v-model="network" placeholder="选择通道:" size="small" style="width:120px">
+                  <Col span="4">
+                    <Select v-model="networkId" placeholder="选择通道:" size="small" style="width:120px">
                       <Option :value="network.channelId" v-for="(network,index) in networks" :key="index">
                         {{network.channelName}}
                       </Option>
                     </Select>
                   </Col>
-                  <Col span="6">
-                    <Select v-model="instruct" placeholder="选着指令:" size="small" style="width:160px">
-                      <Option :value="instruct.instructId" v-for="(instruct,index) in instructs" :key="index">
-                        {{instruct.instructPath}}:{{instruct.instructName}}
+                </Row>
+                <Row style="height: 30px">
+                  <Col span="15" >
+                    <Select v-model="instructId" placeholder="选着指令:" size="small" style="width:700px">
+                      <Option :value="ins.instructId" v-for="(ins,index) in instructs" :key="index">
+                        {{ins.instructPath}}:{{ins.instructName}}
                       </Option>
                     </Select>
                   </Col>
-                  <Col span="1">
+                  <Col span="3">
                     <div class="tools_search" @click="sendButton()">下发</div>
                   </Col>
                 </Row>
               </div>
-              <Tabs style="background-color:#fff;margin-left: 1px;" height="487">
-
-                <TabPane id="pdfDom" label="报文监测" icon="ios-monitor-outline" >
-                  <Button type="primary" icon="printer" style="position:fixed;left: 68%;margin-top:4px;"
-                          v-on:click="stop()" v-if="isConnect">停止
-                  </Button>
-                  <Button type="primary" icon="printer" style="position:fixed;left: 78%;margin-top:4px;"
+              <Tabs style="background-color:#fff;margin-left: 1px;" height="427px">
+                <TabPane id="pdfDom" label="报文监测" icon="ios-monitor-outline">
+                  <!--<Button type="primary" icon="printer" style="position:fixed;left: 68%;margin-top:-50px;"-->
+                          <!--v-on:click="stop()" v-if="isConnect">停止-->
+                  <!--</Button>-->
+                  <Button type="primary" icon="printer" style="position:fixed;left: 78%;margin-top:-50px;"
                           v-on:click="pdfReport(hexMsg)">导出
                   </Button>
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:4px;"
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:-50px;"
                           @click="cleanMeg()">清除
                   </Button>
                   <div id="hex" style="overflow-y:scroll; width:100%; height:400px; align-content: left">
@@ -53,11 +60,11 @@
                   </div>
                 </TabPane>
 
-                <TabPane label="报文解析" icon="clipboard">
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 175%;margin-top:4px;"
+                <TabPane id="pdfDom1" label="报文解析" icon="clipboard">
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 175%;margin-top:-50px;"
                           @click="pdfReport(expMsg)">导出
                   </Button>
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:4px;"
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:-50px;"
                           @click="cleanMeg1()">清除
                   </Button>
                   <div id="hex1" style="overflow-y:scroll; width:100%; height:400px; align-content: left">
@@ -85,16 +92,18 @@
     data() {
       return {
         htmlTitle: '页面导出PDF文件名',
-        isConnect:false,
+        isConnect: false,
         tree: [],
         instructs: [],
         networks: [],
         massages: [],
+        startMark: null,
+        endMark: null,
         startDateTime: null,
         endDateTime: null,
-        instruct: null,
-        network: null,
         ertuId: null,
+        instructId: null,
+        networkId: null,
 
         msg: {
           code: "",
@@ -109,7 +118,7 @@
         title: '',
         taskParam: null,
         modal1: false,
-        ws:null,
+        ws: null,
       }
     },
     methods: {
@@ -136,14 +145,13 @@
       loadTree() {
         this.$http(`/ertu/ertuMeterTree?idIsNull=false`)
           .then(res => {
-
             if (res.data.status === 'success') {
               this.tree = res.data.results.children;
             }
           });
       },
       loadInstructs(protocol) {
-        this.instruct = null;
+        this.instructId = null;
         this.instructs = [];
         this.$http(`/instructProtocolSet/protocolInstruct?protocolId=${protocol}`)
           .then(res => {
@@ -166,6 +174,15 @@
             }
           });
       },
+      findProtocol(protocolId) {
+        this.$http(`/protocol/findOne?id=${protocolId}`)
+          .then(res => {
+            if (res.data.status == 'success') {
+              this.protocol = res.data.results;
+            }
+          })
+      },
+
       loadData() {
         this.$http(`/meter/getList`)
           .then(res => {
@@ -179,19 +196,43 @@
           this.tabData = [];
           this.addProtocolId = '';
         } else {
-            this.ertuId = data[0].id;
-            this.addProtocolId = data[0].modelId;
-            this.loadInstructs(this.addProtocolId);
-            this.loadNetworks(this.ertuId);
+          this.ertuId = data[0].id;
+          this.addProtocolId = data[0].modelId;
+          this.loadInstructs(this.addProtocolId);
+          this.loadNetworks(this.ertuId);
+          this.findProtocol(this.addProtocolId);
+
+
+          var meterTree = this.$refs.tree4.getCheckedNodes();
+          this.startMark = 0;
+          this.endMark = 0;
+          meterTree.forEach(node => {
+            if (node.children == null) {
+              if (this.startMark == 0 && this.endMark == 0) {
+                this.startMark = node.modelId;
+                this.endMark = node.modelId+3;
+              } else {
+                if (node.modelId < this.startMark) {
+                  this.startMark = node.modelId;
+                }
+                if (node.modelId+3 > this.endMark) {
+                  this.endMark = node.modelId+3;
+                }
+              }
+            }
+          });
         }
       },
       sendButton() {
-        if(this.instruct==null){
+        if (this.instructId == null) {
           this.$Message.info("请先选择指令！");
+          return 0;
+        } else if (this.networkId == null) {
+          this.$Message.info("请先选择通道！");
           return 0;
         }
 
-        if(this.isConnect){
+        if (this.isConnect) {
           this.$Modal.confirm({
             title: "断开单前发送数据！",
             content: "正在交互中，断开后可能会引起错误！",
@@ -204,53 +245,67 @@
               return;
             }
           });
-        }else {
-          this.start()};
+        } else {
+          this.start()
+        }
+
+
+        ;
       },
-      start(){
-        var meterTree = this.$refs.tree4.getCheckedNodes();
-        var startMark = null;
-        var endMark = null;
-        meterTree.forEach(node => {
-          if (node.children == null) {
-            if (startMark == null && endMark == null) {
-              startMark = node.modelId;
-              endMark = node.modelId;
-            } else {
-              if (node.id < startMark) {
-                startMark = node.modelId;
-              }
-              if (node.id > endMark) {
-                endMark = node.modelId;
-              }
-            }
+      start() {
+        // var meterTree = this.$refs.tree4.getCheckedNodes();
+        // var startMark = null;
+        // var endMark = null;
+        // meterTree.forEach(node => {
+        //   if (node.children == null) {
+        //     if (startMark == null && endMark == null) {
+        //       startMark = node.modelId;
+        //       endMark = node.modelId;
+        //     } else {
+        //       if (node.id < startMark) {
+        //         startMark = node.modelId;
+        //       }
+        //       if (node.id > endMark) {
+        //         endMark = node.modelId;
+        //       }
+        //     }
+        //   }
+        // });
+
+        var instruct = {};
+        this.instructs.forEach((nw) => {
+          if (nw.instructId === this.instructId) {
+            instruct = nw;
+          }
+        });
+
+        var network = {};
+        this.networks.forEach((nw) => {
+          if (nw.channelId === this.networkId) {
+            network = nw;
           }
         });
         var obj = {
-          startMark: (startMark - 1) * 4 + 1,
-          endMark: endMark * 4,
+          startMark: this.startMark,
+          endMark: this.endMark,
           startDate: this.startDateTime,
           endDate: this.endDateTime,
           restPath: this.protocol.restPath,
-          taskType: this.instruct.instructPath,
-          ipAddress: this.network.ipAddress,
-          ipPort: this.network.ipPort,
+          taskType: instruct.instructPath,
+          ipAddress: network.ipAddress,
+          ipPort: network.ipPort,
+          channel: null,
+          red: 0,
         };
         //调用web接口
-        this.$http(`/acquired/manualTask`, {params: obj})
-          .then(res => {
-            if (res.data.status == 'success') {
-              //将接口返回的数据通过websocket发送给后台
-              this.socket(JSON.stringify(res.data.results));
-            }
-          });
+        this.socket(JSON.stringify(obj));
         console.log("startMark:" + obj.startMark + ",endMark:" + obj.endMark);
       },
       cleanMeg() {
-        this.socketMsg = [];
+        this.hexMsg = [];
       },
       cleanMeg1() {
-        this.socketMsg1 = [];
+        this.expMsg = [];
       },
 
 
@@ -260,6 +315,7 @@
       getEnd(date) {
         this.endDateTime = date;
       },
+
       // websocket服务
       socket(obj) {
         var that = this;
@@ -267,35 +323,33 @@
         that.ws = new WebSocket("ws://localhost:9090/websocket");
         // 建立 web socket 连接成功触发事件
         that.ws.onopen = function (evt) {
-          console.log("后台webSocketServer连接成功！");
-          if(!that.isConnect){
-            that.socketMsg.push("连接成功！");
-          }
-          if(obj!=='') {
+          that.hexMsg.push("连接成功！");
+          that.isConnect = true;
+          if (obj !== '') {
             that.ws.send(obj);
           }
         };
         // 接收服务端数据时触发事件
         that.ws.onmessage = function (evt) {
-          that.msg=JSON.parse(evt.data);
-          if(that.msg.code==1) {
+          that.msg = JSON.parse(evt.data);
+          if (that.msg.code == 1) {
             that.hexMsg.push("下行：" + that.msg.infoHex);
             that.expMsg.push("下行：" + that.msg.infoExplain.replace(/-n/g, "\n"));
-          }else if(that.msg.code==2){
-            that.hexMsg.push("上行："+that.msg.infoHex);
-            that.expMsg.push("上行："+that.msg.infoExplain.replace(/-n/g,"\n"));
-          }else if(that.msg.code==0||that.msg.code==-1){
+          } else if (that.msg.code == 2) {
+            that.hexMsg.push("上行：" + that.msg.infoHex);
+            that.expMsg.push("上行：" + that.msg.infoExplain.replace(/-n/g, "\n"));
+          } else if (that.msg.code == 0 || that.msg.code == -1) {
             that.hexMsg.push(that.msg.message);
-          }else if(that.msg.code==3){
+          } else if (that.msg.code == 3) {
             that.ws.close();
           }
         };
+
         // 断开 web socket 连接成功触发事件
         that.ws.onclose = function (event) {
+          that.hexMsg.push("连接关闭!");
+          that.isConnect = false;
         };
-      },
-      stop(){
-        this.socket("stop");
       },
       pdfReport() {
         if (this.socketMsg.length == 0) {
@@ -436,7 +490,7 @@
   }
 
   .tools_top {
-    height: 30px;
+    height: 65px;
     vertical-align: middle;
     padding-top: 5px;
     background: #DBEFFA;

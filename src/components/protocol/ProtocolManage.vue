@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    <Modal v-model="modal1" width="360px"
+    <Modal v-model="modal1" width="500px"
            @on-ok="ok"
            @on-cancel="cancel">
       <p slot="header" style="color:#2d8cf0;text-align:center">
@@ -41,19 +41,19 @@
           <FormItem label="规约名称">
                         <span style="position: absolute; right: -10px; color:red;"
                               v-if="protocol.protocolName===''">*</span>
-            <Input v-model="protocol.protocolName" style="width:200px"/>
+            <Input v-model="protocol.protocolName" style="width:360px"/>
           </FormItem>
           <FormItem label="规约别名">
-            <Input v-model="protocol.protocolAlias" style="width:200px"/>
+            <Input v-model="protocol.protocolAlias" style="width:360px"/>
           </FormItem>
           <FormItem label="规约类名">
-            <Input v-model="protocol.restPath" style="width:200px"/>
+            <Input v-model="protocol.restPath" style="width:360px"/>
           </FormItem>
           <FormItem label="规约版本">
-            <Input v-model="protocol.versionName" style="width:200px"/>
+            <Input v-model="protocol.versionName" style="width:360px"/>
           </FormItem>
           <FormItem label="链路地址">
-            <Input v-model="protocol.linkAddress" style="width:200px"/>
+            <Input v-model="protocol.linkAddress" style="width:360px"/>
           </FormItem>
           <!--<FormItem label="规约模板">-->
           <!--<span style="position: absolute; right: -10px; color:red;" v-if="protocol.protocolModelId===''">*</span>-->
@@ -120,7 +120,7 @@
           {
             title: '服务路径',
             key: 'restPath',
-            width: 110,
+            width: 350,
             align: 'center',
             ellipsis: true
           },
@@ -173,7 +173,6 @@
                   },
                   on: {
                     click: () => {
-                      this.loadInstructModels();
                       this.modal1 = true;
                       this.protocol = params.row;
                       this.changeProtocolModelId = params.row.protocolModelId;
@@ -214,14 +213,6 @@
             }
           })
       },
-      loadInstructModels() {
-        this.$http(`/instructModel/findAll`)
-          .then(res => {
-            if (res.data.status === 'success') {
-              this.instructModels = res.data.results;
-            }
-          })
-      },
       select() {
         if (this.comment_content == null || this.comment_content === '') {
           this.loadData();
@@ -240,7 +231,6 @@
         }
       },
       add() {
-        this.loadInstructModels()
         this.modal1 = true;
         this.change = false;
         this.protocol = {};
@@ -314,7 +304,6 @@
     },
     created: function () {
       this.loadData();
-      this.loadInstructModels();
       if (this.$route.query.title == null) {
         this.title = '规约管理';
       } else {

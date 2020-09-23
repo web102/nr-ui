@@ -9,10 +9,12 @@ import 'iview/dist/styles/iview.css';
 import htmlToPdf from './components/utils/htmlToPdf'
 Vue.use(htmlToPdf)
 
-axios.defaults.baseURL = 'http://localhost:8001';
+axios.defaults.baseURL = 'http://localhost:9090';
 Vue.http = Vue.prototype.$http = axios;
 Vue.config.productionTip = false;
+
 Vue.use(iView);
+
 
 /* eslint-disable no-new */
 new Vue({

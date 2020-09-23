@@ -1,5 +1,5 @@
-<template>
-  <Col span="4">
+<template >
+  <Col span="4" style="height: 427px">
     <div class="content_left">
       <div class="menu_box">
         <template v-for="(item,idx) of menu_list">

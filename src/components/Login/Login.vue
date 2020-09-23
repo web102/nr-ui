@@ -103,6 +103,7 @@
             }
             else if(res.data.status === "fail"){
               this.loginMsg=res.data.results;
+              this.loginMsg="登录失败";
             }
           })
           .catch(()=>{
