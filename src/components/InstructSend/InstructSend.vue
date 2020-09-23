@@ -32,7 +32,7 @@
                   </Col>
                 </Row>
                 <Row style="height: 30px">
-                  <Col span="15" >
+                  <Col span="20" >
                     <Select v-model="instructId" placeholder="选着指令:" size="small" style="width:700px">
                       <Option :value="ins.instructId" v-for="(ins,index) in instructs" :key="index">
                         {{ins.instructPath}}:{{ins.instructName}}
@@ -44,15 +44,15 @@
                   </Col>
                 </Row>
               </div>
-              <Tabs style="background-color:#fff;margin-left: 1px;" height="427px">
+              <Tabs style="background-color:#fff;margin-left: 1px;">
                 <TabPane id="pdfDom" label="报文监测" icon="ios-monitor-outline">
                   <!--<Button type="primary" icon="printer" style="position:fixed;left: 68%;margin-top:-50px;"-->
                           <!--v-on:click="stop()" v-if="isConnect">停止-->
                   <!--</Button>-->
-                  <Button type="primary" icon="printer" style="position:fixed;left: 78%;margin-top:-50px;"
+                  <Button type="primary" icon="printer" style="position:fixed;left: 78%;margin-top:-50px;" v-if="hexMsg!=''"
                           v-on:click="pdfReport(hexMsg)">导出
                   </Button>
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:-50px;"
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:-50px;" v-if="hexMsg!=''"
                           @click="cleanMeg()">清除
                   </Button>
                   <div id="hex" style="overflow-y:scroll; width:100%; height:400px; align-content: left">
@@ -61,10 +61,10 @@
                 </TabPane>
 
                 <TabPane id="pdfDom1" label="报文解析" icon="clipboard">
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 175%;margin-top:-50px;"
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 175%;margin-top:-50px;" v-if="expMsg!=''"
                           @click="pdfReport(expMsg)">导出
                   </Button>
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:-50px;"
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:-50px;" v-if="expMsg!=''"
                           @click="cleanMeg1()">清除
                   </Button>
                   <div id="hex1" style="overflow-y:scroll; width:100%; height:400px; align-content: left">
@@ -338,9 +338,8 @@
           } else if (that.msg.code == 2) {
             that.hexMsg.push("上行：" + that.msg.infoHex);
             that.expMsg.push("上行：" + that.msg.infoExplain.replace(/-n/g, "\n"));
-          } else if (that.msg.code == 0 || that.msg.code == -1) {
+          } else if (that.msg.code <0||that.msg.code==3) {
             that.hexMsg.push(that.msg.message);
-          } else if (that.msg.code == 3) {
             that.ws.close();
           }
         };
@@ -351,13 +350,9 @@
           that.isConnect = false;
         };
       },
-      pdfReport() {
-        if (this.socketMsg.length == 0) {
-          this.$Message.info("报文内容为空，请先下发指令！");
-          return 0;
-        }
+      pdfReport(massage) {
         var obj = {
-          "msg": this.socketMsg
+          "msg": massage
         }
         this.$http(`/pdf/pdfReport`, {params: obj})
           .then(res => {

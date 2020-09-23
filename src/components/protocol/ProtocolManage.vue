@@ -52,9 +52,9 @@
           <FormItem label="规约版本">
             <Input v-model="protocol.versionName" style="width:360px"/>
           </FormItem>
-          <FormItem label="链路地址">
-            <Input v-model="protocol.linkAddress" style="width:360px"/>
-          </FormItem>
+          <!--<FormItem label="链路地址">-->
+            <!--<Input v-model="protocol.linkAddress" style="width:360px"/>-->
+          <!--</FormItem>-->
           <!--<FormItem label="规约模板">-->
           <!--<span style="position: absolute; right: -10px; color:red;" v-if="protocol.protocolModelId===''">*</span>-->
           <!--<Select v-model="protocol.protocolModelId" style="width:200px">-->
@@ -131,13 +131,13 @@
             align: 'center',
             ellipsis: true
           },
-          {
-            title: '链路地址',
-            key: 'linkAddress',
-            width: 130,
-            align: 'center',
-            ellipsis: true
-          },
+          // {
+          //   title: '链路地址',
+          //   key: 'linkAddress',
+          //   width: 130,
+          //   align: 'center',
+          //   ellipsis: true
+          // },
           // {
           //     title: '指令模板',
           //     key: 'protocolModelId',
