@@ -27,11 +27,11 @@
                                     </Col>
                                 </Row>
                             </div>
-                            <Table class="tab" :columns="columns" :data="tabData" ellipsis border height="487" highlight-row align="left"></Table>
+                            <Table class="tab" :columns="columns" :data="tabData" ellipsis border :height="tableHeight" highlight-row align="left"></Table>
                         </Col>
-                        <Col span="5" pull="19">
-                            <div class="tools_top1">终端</div>
-                            <Tree :data="tree" @on-select-change="choiceAll" ref="tree4"></Tree>
+                        <Col span="5" pull="19" style="border-bottom:1px solid rgb(201, 201, 201);">
+                            <div class="tools_top1"  align="center">终端</div>
+                            <Tree :data="tree" @on-select-change="choiceAll" ref="tree4"  align="left"></Tree>
                         </Col>
                     </Row>
                 </div>
@@ -48,10 +48,10 @@
                     <FormItem label="通道名称">
                         <Input v-model="network.channelName" style="width:150px" :required="true"/>
                     </FormItem>
-                    <FormItem label="通道IP">
+                    <FormItem label="IP地址">
                         <Input v-model="network.ipAddress" style="width:150px"/>
                     </FormItem>
-                    <FormItem label="通道端口">
+                    <FormItem label="端口号">
                         <Input v-model="network.ipPort" style="width:150px"/>
                     </FormItem>
                 </Form>
@@ -93,18 +93,18 @@
                         title: '通道名称',
                         key: 'channelName',
                         align: 'center',
-                        width: 120,
+                        width: 220,
                         ellipsis: true
                     },
                     {
-                        title: '通道IP',
+                        title: 'IP地址',
                         key: 'ipAddress',
                         width: 120,
                         align: 'center',
                         ellipsis: true
                     },
                     {
-                        title: '通道端口',
+                        title: '端口号',
                         key: 'ipPort',
                         width: 100,
                         align: 'center',
@@ -152,6 +152,7 @@
                 tabData: []
             }
         },
+      props: ['tableHeight'],
         methods: {
             renderContent(h, {root, node, data}) {
                 return h('span', {

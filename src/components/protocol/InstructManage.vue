@@ -4,54 +4,53 @@
       <div class="content_title">{{title}}</div>
       <!-- 主体内容 -->
       <div class="content_main">
-        <div class="tab_content" style="background-color:#fff">
+        <div class="tools_top">
           <Row>
-            <Col span="19" push="5" style="background-color: #C9C9C9;">
-              <div class="tools_top">
-                <Row>
-                  <Col span="8">
-                    <label for="comment_content">指令名称:</label>
-                    <Input type="text" id="comment_content" size="small" v-model="comment_content"></Input>
-                  </Col>
-                  <Col span="3">
-                    <div class="tools_search" @click="select()">
-                      查询
-                      <Icon type="search"></Icon>
-                    </div>
-                  </Col>
-                  <Col span="3">
-                    <div class="tools_search" @click="add">
-                      配置
-                      <Icon type="plus"></Icon>
-                    </div>
-                  </Col>
-                </Row>
-              </div>
-              <Table class="tab" :columns="columns" :data="tabData" ellipsis border :height="tableHeight" highlight-row align="left"></Table>
+            <Col span="8">
+              <label for="comment_content">指令名称:</label>
+              <Input type="text" id="comment_content" size="small" v-model.trim="comment_content"/>
             </Col>
-            <Col span="5" pull="19"style="border-bottom:1px solid rgb(201, 201, 201);">
-              <div class="tools_top1" align="center">规约</div>
-              <Tree :data="data1" @on-select-change="choiceAll" ref="tree4" align="left"></Tree>
+            <Col span="3">
+              <div class="tools_search" @click="select">
+                查询
+                <Icon type="search"></Icon>
+              </div>
+            </Col>
+            <Col span="3">
+              <div class="tools_search" @click="add">
+                添加
+                <Icon type="plus"></Icon>
+              </div>
             </Col>
           </Row>
         </div>
+        <div class="tab_content">
+          <Table class="tab" :columns="columns" :data="tabData" ellipsis border :height="tableHeight" highlight-row></Table>
+        </div>
       </div>
     </div>
-    <Modal v-model="modal1" width="500px"
+    <Modal v-model="modal1" width="360px"
            @on-ok="ok"
            @on-cancel="cancel">
       <p slot="header" style="color:#2d8cf0;text-align:center">
-        <span>指令选择</span>
+        <span>指令信息</span>
       </p>
-      <div>
-        <details v-for="(value,key) in instructAll">
-          <summary>{{key}}</summary>
-          <CheckboxGroup v-model="checkedNames">
-            <Checkbox v-for="(list,index) in value" :label=list.instructId :key="index">
-              <span>{{list.instructPath}}:{{list.instructName}}</span>
-            </Checkbox>
-          </CheckboxGroup>
-        </details>
+      <div style="text-align:center;">
+        <Form ref="formInline" :model="instruct" :label-width="80" inline>
+          <FormItem label="指令名称">
+                        <span style="position: absolute; right: -10px; color:red;"
+                              v-if="instruct.instructName===''">*</span>
+            <Input v-model="instruct.instructName" style="width:200px;"/>
+          </FormItem>
+          <FormItem label="指令类型">
+                        <span style="position: absolute; right: -10px; color:red;"
+                              v-if="instruct.instructType===''">*</span>
+            <Input v-model="instruct.instructType" style="width:200px"/>
+          </FormItem>
+          <FormItem label="标识">
+            <Input v-model="instruct.instructPath" style="width:200px"/>
+          </FormItem>
+        </Form>
       </div>
     </Modal>
   </Col>
@@ -60,14 +59,11 @@
   export default {
     data() {
       return {
-        data1: [],
-        tabData: [],
-        instructModel: [],
-        addProtocolId: '',
-        // addModelId: '',
-        instructAll: [],
-        instructAll: [],
-        checkedNames: [],
+        instruct: {
+          instructName: '',
+          instructType: '',
+          instructPath: '',
+        },
         loading: true,
         title: '',
         modal1: false,
@@ -92,14 +88,14 @@
           {
             title: '指令名称',
             key: 'instructName',
-            align: 'center',
-            width: 400,
+            align: 'left',
+            width: 500,
             ellipsis: true
           },
           {
-            title: '类型',
+            title: '指令类型',
             key: 'instructType',
-            width: 80,
+            width: 90,
             align: 'center',
             ellipsis: true
           },
@@ -120,6 +116,21 @@
               return h('div', [
                 h('Button', {
                   props: {
+                    type: 'primary',
+                    size: 'small'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.modal1 = true;
+                      this.instruct = params.row;
+                    }
+                  }
+                }, '修改'),
+                h('Button', {
+                  props: {
                     type: 'error',
                     size: 'small'
                   },
@@ -133,92 +144,27 @@
             }
           }
         ],
+        tabData: [],
       }
     },
     props: ['tableHeight'],
+
     methods: {
-      renderContent(h, {root, node, data}) {
-        return h('span', {
-          style: {
-            display: 'inline-block',
-            width: '100%',
-            left: '1px'
-          }
-        }, [
-          h('span', [
-            h('Icon', {
-              props: {
-                type: 'ios-paper-outline'
-              },
-              style: {
-                marginRight: '2px'
-              }
-            }),
-            h('span', data.title)
-          ])
-        ]);
-      },
-      loadTree() {
-        this.$http(`/protocol/protocolTree`)
-          .then(res => {
-            if (res.data.status === 'success') {
-              this.data1 = res.data.results.children;
-            }
-          })
-      },
-      loadInstructAll() {
-        this.$http(`/instruct/instructSortByType`)
-          .then(res => {
-            if (res.data.status === 'success') {
-              this.instructAll = res.data.results;
-            }
-          })
-      },
-      loadData(protocolId) {
-        this.$http(`/instructProtocolSet/protocolInstruct?protocolId=${protocolId}`)
+      loadData() {
+        this.$http(`/instruct/findAll`)
           .then(res => {
             if (res.data.status === 'success') {
               this.tabData = res.data.results;
             }
           })
       },
-      add() {
-        if (this.addProtocolId == '') {
-          this.$Message.info('请选择左侧的规约!');
-          return 0;
-        }
-        this.modal1 = true;
-        this.loadInstructAll();
-        this.checkedNames = [];
-        for (let instruct of this.tabData) {
-          this.checkedNames.push(instruct.instructId)
-        }
-      },
-      ok() {
-        this.$http(`/instructProtocolSet/add?protocolId=${this.addProtocolId}&instructIds=${this.checkedNames}`)
-          .then(res => {
-            if (res.data.status === 'success') {
-              this.$Message.info('操作成功！');
-            } else {
-              this.$Message.info('操作失败！');
-            }
-            this.loadData(this.addProtocolId);
-          })
-      },
-      cancel() {
-        this.$Message.info('您取消了添加操作！');
-        this.loadData(this.addProtocolId);
-      },
       select() {
-        if (this.addProtocolId === '') {
-          this.$Message.info("请在左侧选择规约！");
-        }
-        else if (this.comment_content == null || this.comment_content === '') {
-          this.$Message.info("请输入查询内容！");
+        if (this.comment_content == null || this.comment_content === '') {
           this.loadData();
+          this.$Message.info("请输入查询内容！");
         }
         else {
-          this.$http(`/instruct/findSimilar?instructName=${this.comment_content}&modelId=0&protocolId=${this.addProtocolId}`)
+          this.$http(`/instruct/findSimilar?instructName=${this.comment_content}&modelId=0&protocolId=0`)
             .then(res => {
               if (res.data.status === 'success' && res.data.results != '') {
                 this.tabData = res.data.results;
@@ -229,18 +175,46 @@
             });
         }
       },
+      add() {
+        this.modal1 = true;
+        this.instruct = {
+          instructName: '',
+          instructType: '',
+          instructPath: '',
+        }
+      },
+      ok() {
+        if (this.instruct.instructName === '' || this.instruct.instructType === '') {
+          this.$Message.info("添加失败，必填数据不能为空")
+        } else {
+          var url = `/instruct/save`;
+          this.$http(url, {params: this.instruct})
+            .then(res => {
+              if (res.data.status === 'success') {
+                this.$Message.info('操作成功！');
+              } else {
+                this.$Message.info('操作失败！');
+              }
+              this.loadData();
+            })
+        }
+      },
+      cancel() {
+        this.$Message.info('您取消了添加操作！');
+        this.loadData();
+      },
       delete(row) {
         this.$Modal.confirm({
           title: "确认删除该条目",
           content: "执行删除操作之后，可能影响系统功能，请谨慎操作！",
           onOk: () => {
-            this.$http(`/instructProtocolSet/deleteByProtocolIdAndInstructId?protocolId=${this.addProtocolId}&instructId=${row.instructId}`)
+            this.$http(`/instruct/delete?id=${row.instructId}`)
               .then(res => {
                 if (res.data.status == 'success') {
-                  this.loadData(this.addProtocolId);
+                  this.loadData();
                   this.$Message.info('操作成功！');
                 } else {
-                  this.$Message.info('操作失败！');
+                  this.$Message.info('操做失败！');
                 }
               })
           },
@@ -249,22 +223,12 @@
           }
         });
       },
-      choiceAll: function (data) {
-        if (data[0] == null) {
-          this.tabData = [];
-          this.addProtocolId = '';
-          // this.addModelId = '';
-        } else {
-          this.addProtocolId = data[0].id;
-          // this.addModelId = data[0].modelId;
-          this.loadData(this.addProtocolId)
-        }
-      }
     },
-    created: function () {	//页面创建前
-      this.loadTree();
+
+    created: function () {
+      this.loadData()
       if (this.$route.query.title == null) {
-        this.title = '规约管理';
+        this.title = '指令管理';
       } else {
         this.title = this.$route.query.title;
       }
@@ -381,15 +345,6 @@
   }
 
   .tools_top {
-    height: 30px;
-    vertical-align: middle;
-    padding-top: 5px;
-    background: #DBEFFA;
-    padding-left: 10px;
-    margin-left: 1px;
-  }
-
-  .tools_top1 {
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;

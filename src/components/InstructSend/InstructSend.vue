@@ -6,25 +6,25 @@
       <div class="content_main">
         <div class="tab_content" style="background-color:#fff">
           <Row>
-            <Col span="19" push="5" style="background-color: #C9C9C9;">
+            <Col span="19" push="5" style="background-color: #C9C9C9; ">
               <div class="tools_top">
                 <Row style="height: 30px">
                   <Col span="3">
-                    <Input type="text" id="startMark" size="small"style="width: 120px" v-model="startMark" placeholder="开始地址"/>
+                    <Input type="text" id="startMark" size="small"style="width: 100%" v-model="startMark" placeholder="开始点号"/>
                   </Col>
-                  <Col span="4">
-                    <Input type="text" id="endMark" size="small" style="width: 120px" v-model="endMark" placeholder="开始地址"/>
+                  <Col span="3">
+                    <Input type="text" id="endMark" size="small" style="width: 100%" v-model="endMark" placeholder="结束点号"/>
                   </Col>
-                  <Col span="4">
+                  <Col span="5" align="right">
                     <DatePicker type="datetime" size="small" placeholder="选择开始时间" @on-change="getStart"
-                                style="width: 160px"></DatePicker>
+                                style="width: 90%"></DatePicker>
                   </Col>
-                  <Col span="4">
+                  <Col span="5" align="left">
                     <DatePicker type="datetime" size="small" placeholder="选择结束时间" @on-change="getEnd"
-                                style="width: 160px"></DatePicker>
+                                style="width: 90%"></DatePicker>
                   </Col>
                   <Col span="4">
-                    <Select v-model="networkId" placeholder="选择通道:" size="small" style="width:120px">
+                    <Select v-model="networkId" placeholder="选择通道:" size="small" style="width:100%">
                       <Option :value="network.channelId" v-for="(network,index) in networks" :key="index">
                         {{network.channelName}}
                       </Option>
@@ -32,19 +32,19 @@
                   </Col>
                 </Row>
                 <Row style="height: 30px">
-                  <Col span="20" >
-                    <Select v-model="instructId" placeholder="选着指令:" size="small" style="width:700px">
+                  <Col span="17" align="left">
+                    <Select v-model="instructId" placeholder="选择指令:" size="small" style="width:100%">
                       <Option :value="ins.instructId" v-for="(ins,index) in instructs" :key="index">
                         {{ins.instructPath}}:{{ins.instructName}}
                       </Option>
                     </Select>
                   </Col>
-                  <Col span="3">
+                  <Col span="3" align="right">
                     <div class="tools_search" @click="sendButton()">下发</div>
                   </Col>
                 </Row>
               </div>
-              <Tabs style="background-color:#fff;margin-left: 1px;">
+              <Tabs class="massage_panel" style="background-color:#fff;margin-left: 1px;border-bottom:1px solid  rgb(201, 201, 201);">
                 <TabPane id="pdfDom" label="报文监测" icon="ios-monitor-outline">
                   <!--<Button type="primary" icon="printer" style="position:fixed;left: 68%;margin-top:-50px;"-->
                           <!--v-on:click="stop()" v-if="isConnect">停止-->
@@ -55,7 +55,7 @@
                   <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:-50px;" v-if="hexMsg!=''"
                           @click="cleanMeg()">清除
                   </Button>
-                  <div id="hex" style="overflow-y:scroll; width:100%; height:400px; align-content: left">
+                  <div id="hex" class="overflowY">
                     <p align="left" v-for="(msg,index) in hexMsg" :key="index">{{msg}}</p>
                   </div>
                 </TabPane>
@@ -67,7 +67,7 @@
                   <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:-50px;" v-if="expMsg!=''"
                           @click="cleanMeg1()">清除
                   </Button>
-                  <div id="hex1" style="overflow-y:scroll; width:100%; height:400px; align-content: left">
+                  <div id="hex1" class="overflowY">
                     <span align="left" v-for="(msg,index) in expMsg" :key="index">
                       <div v-for="(msgn,index1) in (msg.split('\n'))">
                         <span v-if="index1!==0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -77,8 +77,8 @@
                 </TabPane>
               </Tabs>
             </Col>
-            <Col span="5" pull="19">
-              <div class="tools_top1">终端</div>
+            <Col span="5" pull="19" style="border-bottom: 1px solid darkgrey;">
+              <div class="tools_top1"  align="center">终端</div>
               <Tree :data="tree" @on-check-change="choiceAll" ref="tree4" show-checkbox align="left"></Tree>
             </Col>
           </Row>
@@ -92,7 +92,6 @@
     data() {
       return {
         htmlTitle: '页面导出PDF文件名',
-        isConnect: false,
         tree: [],
         instructs: [],
         networks: [],
@@ -104,24 +103,45 @@
         ertuId: null,
         instructId: null,
         networkId: null,
-
-        msg: {
-          code: "",
-          message: "",
-          infoHex: "",
-          infoExplain: "",
-        },
+        tempMsg: [],
         hexMsg: [],
         expMsg: [],
-
         loading: true,
         title: '',
         taskParam: null,
         modal1: false,
         ws: null,
+        wsIsConnect:false,
       }
     },
+    mounted() {
+
+    },
     methods: {
+      openTimer(){
+        this.timer = setInterval(()=>{
+          if(this.tempMsg.length>=0){
+            this.tempMsg.forEach((msg)=>{
+              if (msg.code == 1) {
+                this.hexMsg.push(msg.message+"下行：" + msg.infoHex);
+                this.expMsg.push(msg.message+"下行：" + msg.infoExplain.replace(/-n/g, "\n"));
+              } else if (msg.code == 2) {
+                this.hexMsg.push(msg.message+"上行：" + msg.infoHex);
+                this.expMsg.push(msg.message+"上行：" +msg.infoExplain.replace(/-n/g, "\n"));
+              } else if (msg.code <= 0) {
+                this.hexMsg.push(msg.message);
+              }else if(msg.code==3){
+                this.hexMsg.push(msg.message);
+                this.wsIsConnect = false;
+                clearInterval(this.timer);
+                this.timer = null
+              }
+            })
+          }
+          this.tempMsg = []
+        },100)
+      },
+
       renderContent(h, {root, node, data}) {
         return h('span', {
           style: {
@@ -224,7 +244,10 @@
         }
       },
       sendButton() {
-        if (this.instructId == null) {
+        if(this.ertuId==null){
+          this.$Message.info("请在左侧勾选终端和电表！");
+          return 0;
+        } else if (this.instructId == null) {
           this.$Message.info("请先选择指令！");
           return 0;
         } else if (this.networkId == null) {
@@ -232,12 +255,11 @@
           return 0;
         }
 
-        if (this.isConnect) {
+        if (this.wsIsConnect) {
           this.$Modal.confirm({
             title: "断开单前发送数据！",
             content: "正在交互中，断开后可能会引起错误！",
             onOk: () => {
-              this.socket("exit");
               this.start();
             },
             onCancel: () => {
@@ -248,30 +270,9 @@
         } else {
           this.start()
         }
-
-
-        ;
       },
       start() {
-        // var meterTree = this.$refs.tree4.getCheckedNodes();
-        // var startMark = null;
-        // var endMark = null;
-        // meterTree.forEach(node => {
-        //   if (node.children == null) {
-        //     if (startMark == null && endMark == null) {
-        //       startMark = node.modelId;
-        //       endMark = node.modelId;
-        //     } else {
-        //       if (node.id < startMark) {
-        //         startMark = node.modelId;
-        //       }
-        //       if (node.id > endMark) {
-        //         endMark = node.modelId;
-        //       }
-        //     }
-        //   }
-        // });
-
+        this.openTimer();
         var instruct = {};
         this.instructs.forEach((nw) => {
           if (nw.instructId === this.instructId) {
@@ -320,34 +321,31 @@
       socket(obj) {
         var that = this;
         // 初始化一个 WebSocket 对象
-        that.ws = new WebSocket("ws://localhost:9090/websocket");
+
+        this.ws = new WebSocket("ws://localhost:9090/websocket");
         // 建立 web socket 连接成功触发事件
-        that.ws.onopen = function (evt) {
+        this.ws.onopen = function (evt) {
           that.hexMsg.push("连接成功！");
-          that.isConnect = true;
+          that.wsIsConnect = true;
           if (obj !== '') {
             that.ws.send(obj);
           }
         };
         // 接收服务端数据时触发事件
-        that.ws.onmessage = function (evt) {
-          that.msg = JSON.parse(evt.data);
-          if (that.msg.code == 1) {
-            that.hexMsg.push("下行：" + that.msg.infoHex);
-            that.expMsg.push("下行：" + that.msg.infoExplain.replace(/-n/g, "\n"));
-          } else if (that.msg.code == 2) {
-            that.hexMsg.push("上行：" + that.msg.infoHex);
-            that.expMsg.push("上行：" + that.msg.infoExplain.replace(/-n/g, "\n"));
-          } else if (that.msg.code <0||that.msg.code==3) {
-            that.hexMsg.push(that.msg.message);
-            that.ws.close();
-          }
+        this.ws.onmessage = function (evt) {
+          that.tempMsg.push(JSON.parse(evt.data))
         };
 
-        // 断开 web socket 连接成功触发事件
-        that.ws.onclose = function (event) {
-          that.hexMsg.push("连接关闭!");
-          that.isConnect = false;
+        // 断开 web socket 关闭触发事件
+        this.ws.onclose = function (evt) {
+          that.wsIsConnect = false;
+          // var msg = {
+          //   code: 3,
+          //   message: "连接关闭",
+          //   infoHex: "",
+          //   infoExplain: "",
+          // };
+          // that.tempMsg.push(msg)
         };
       },
       pdfReport(massage) {
@@ -547,5 +545,14 @@
     border-radius: 5px;
     vertical-align: middle;
     line-height: 30px;
+  }
+
+  .overflowY{
+    overflow-y:scroll;
+    position: absolute;
+    -webkit-overflow-scrolling: touch;
+    width:100%;
+    align-content: left;
+    height:calc(100vh - 235px);
   }
 </style>

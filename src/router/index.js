@@ -23,15 +23,7 @@ export default new Router({
     },
       {
           path : '/instruct',  //规约管理 => 指令管理
-          component : require('@/components/protocolModel/InstructManage').default
-      },
-      {
-          path : '/instructModel',  //模板管理 => 模板管理
-          component : require('@/components/protocolModel/InstructModelManage').default
-      },
-      {
-          path : '/instructModelSet',  //模板管理 => 模板配置
-          component : require('@/components/protocolModel/InstructModelSet').default
+          component : require('@/components/protocol/InstructManage').default
       },
     {
       path : '/ertu',  //终端管理 => 终端管理

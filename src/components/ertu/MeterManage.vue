@@ -28,12 +28,12 @@
                   </Col>
                 </Row>
               </div>
-              <Table class="tab" :columns="columns" :data="tabData" ellipsis border height="487"
+              <Table class="tab" :columns="columns" :data="tabData" ellipsis border :height="tableHeight"
                      highlight-row align="left"></Table>
             </Col>
-            <Col span="5" pull="19">
-              <div class="tools_top1">终端</div>
-              <Tree :data="tree" @on-select-change="choiceAll" ref="tree4"></Tree>
+            <Col span="5" pull="19" style="border-bottom:1px solid rgb(201, 201, 201);">
+              <div class="tools_top1" align="center">终端</div>
+              <Tree :data="tree" @on-select-change="choiceAll" ref="tree4"  align="left"></Tree>
             </Col>
           </Row>
         </div>
@@ -122,20 +122,6 @@
   export default {
     data() {
       return {
-        manufactures: [
-          {
-            id: 1,
-            name: '变电站'
-          },
-          {
-            id: 2,
-            name: '换流站'
-          },
-          {
-            id: 3,
-            name: '配电站'
-          },
-        ],
         tree: [],
         addErtuId: '',
         protocols: [],
@@ -172,13 +158,13 @@
             title: '电表序号',
             key: 'meterNo',
             align: 'center',
-            width: 120,
+            width: 90,
             ellipsis: true
           }, {
             title: '开始点号',
             key: 'paramModelId',
             align: 'center',
-            width: 120,
+            width: 90,
             ellipsis: true
           },
           {
@@ -343,6 +329,7 @@
         tabData: []
       }
     },
+    props: ['tableHeight'],
     methods: {
       renderContent(h, {root, node, data}) {
         return h('span', {

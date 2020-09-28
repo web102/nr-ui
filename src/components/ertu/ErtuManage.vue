@@ -25,7 +25,7 @@
                     </Row>
                 </div>
                 <div class="tab_content">
-                    <Table class="tab" :columns="columns" :data="tabData" ellipsis border height="487"
+                    <Table class="tab" :columns="columns" :data="tabData" ellipsis border :height="tableHeight"
                            highlight-row></Table>
                 </div>
             </div>
@@ -260,6 +260,7 @@
                 tabData: []
             }
         },
+      props: ['tableHeight'],
         methods: {
             loadData() {
                 this.$http(`/ertu/findAll`)

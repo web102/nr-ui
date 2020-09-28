@@ -25,8 +25,7 @@
           </Row>
         </div>
         <div class="tab_content">
-          <Table class="tab" :columns="columns" :data="tabData" ellipsis border height="487"
-                 highlight-row></Table>
+          <Table class="tab" :columns="columns" :data="tabData" ellipsis border :height="tableHeight"  highlight-row></Table>
         </div>
       </div>
     </div>
@@ -79,7 +78,7 @@
           restPath: '',
           versionName: '',
           protocolModelId: '',
-          linkAddress: ''
+          linkAddress: '',
         },
         loading: true,
         title: '',
@@ -204,6 +203,7 @@
         ],
       }
     },
+    props: ['tableHeight'],
     methods: {
       loadData() {
         this.$http(`/protocol/getList`)

@@ -125,11 +125,10 @@
 		display: inline-block;
 		width: 100%;
 		height: 50px;
-		background-color: #005C7E ;
+		background-color: #005C7E;
+    text-align: center;
 	}
 	.header-left>img{
-		width: 100%;
-		height: 100%;
 	}
 	.header-right{
 		display: inline-block;

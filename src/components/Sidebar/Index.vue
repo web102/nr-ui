@@ -1,18 +1,21 @@
-<template >
-  <Col span="4" style="height: 427px">
-    <div class="content_left">
-      <div class="menu_box">
-        <template v-for="(item,idx) of menu_list">
-          <div class="menu_btn"
-               :class="{btn_active : angle_btn_active[idx] , angle_active : angle_btn_active[idx] , btn_show : angle_btn_bottom[idx]}"
-               @click="menuBtn(idx)">{{item.btn}}
-          </div>
-          <ul class="tree_ul" v-show="angle_btn_bottom[idx]" :style="angle_btn_bottom[idx]?height_show:height_hide">
-            <li v-for="(v,i) of item.li_list" :class="i==tree_li?'active':''" @click="li_click(i,v.path,v.name)">
-              {{v.name}}
-            </li>
-          </ul>
-        </template>
+<template>
+  <Col span="4">
+    <div class="content_main">
+      <div class="content_left">
+        <div class="top_padding"></div>
+        <div class="menu_box">
+          <template v-for="(item,idx) of menu_list">
+            <div class="menu_btn"
+                 :class="{btn_active : angle_btn_active[idx] , angle_active : angle_btn_active[idx] , btn_show : angle_btn_bottom[idx]}"
+                 @click="menuBtn(idx)">{{item.btn}}
+            </div>
+            <ul class="tree_ul" v-show="angle_btn_bottom[idx]" :style="angle_btn_bottom[idx]?height_show:height_hide">
+              <li v-for="(v,i) of item.li_list" :class="i==tree_li?'active':''" @click="li_click(i,v.path,v.name)">
+                {{v.name}}
+              </li>
+            </ul>
+          </template>
+        </div>
       </div>
     </div>
   </Col>
@@ -162,16 +165,7 @@
   .sidebar_left {
     width: 100%;
     text-align: center;
-    margin-top: auto;
-    height: 550px;
-  }
-
-  .content_left {
-    display: inline-block;
-    width: 100%;
-    height: 128%;
-    padding-top: 14px;
-    background: #005C7E;
+    /*height: 550px;*/
   }
 
   .content_right {
@@ -181,19 +175,27 @@
     height: 100%;
   }
 
-  .content_title {
+  .top_padding {
     width: 100%;
     height: 30px;
     line-height: 30px;
-    background-color: #3D6B8C;
+    text-align: center;
+    background-color: #005C7E;
     color: #fff;
+  }
+
+  .content_left {
+    /*padding-top: 30px;*/
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    background: #005C7E;
   }
 
   #content {
     width: 100%;
     text-align: center;
     margin: 0 auto;
-    height: 427px;
   }
 
   .ivu-row {
@@ -209,7 +211,6 @@
   }
 
   .menu_box {
-    margin-top: 15px;
     color: #C8CCD7;
   }
 
@@ -218,7 +219,6 @@
     height: 50px;
     line-height: 50px;
     background-color: #1C718D;
-    border-top: 1px solid #005C7E;
     border-bottom: 1px solid #005C7E;
     text-align: center;
     position: relative;
