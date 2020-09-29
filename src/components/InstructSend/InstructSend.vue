@@ -1,4 +1,4 @@
-<template>
+<template xmlns:Checkbox="http://www.w3.org/1999/html">
   <Col span="20">
     <div class="content_right">
       <div class="content_title">{{title}}</div>
@@ -10,10 +10,10 @@
               <div class="tools_top">
                 <Row style="height: 30px">
                   <Col span="3">
-                    <Input type="text" id="startMark" size="small"style="width: 100%" v-model="startMark" placeholder="开始点号"/>
+                    <Input type="text" id="startAddr" size="small"style="width: 100%" v-model="startAddr" placeholder="开始点号"/>
                   </Col>
                   <Col span="3">
-                    <Input type="text" id="endMark" size="small" style="width: 100%" v-model="endMark" placeholder="结束点号"/>
+                    <Input type="text" id="endAddr" size="small" style="width: 100%" :value="endAddr" placeholder="结束点号"/>
                   </Col>
                   <Col span="5" align="right">
                     <DatePicker type="datetime" size="small" placeholder="选择开始时间" @on-change="getStart"
@@ -44,15 +44,18 @@
                   </Col>
                 </Row>
               </div>
-              <Tabs class="massage_panel" style="background-color:#fff;margin-left: 1px;border-bottom:1px solid  rgb(201, 201, 201);">
-                <TabPane id="pdfDom" label="报文监测" icon="ios-monitor-outline">
+              <Tabs class="massage_panel"
+                    style="background-color:#fff;margin-left: 1px;border-bottom:1px solid  rgb(201, 201, 201);">
+                <TabPane id="pdfDom" label="报文监测" icon="ios-monitor-outline" style="color: black">
                   <!--<Button type="primary" icon="printer" style="position:fixed;left: 68%;margin-top:-50px;"-->
-                          <!--v-on:click="stop()" v-if="isConnect">停止-->
+                  <!--v-on:click="stop()" v-if="isConnect">停止-->
                   <!--</Button>-->
-                  <Button type="primary" icon="printer" style="position:fixed;left: 78%;margin-top:-50px;" v-if="hexMsg!=''"
+                  <Button type="primary" icon="printer" style="position:fixed;left: 78%;margin-top:-50px;"
+                          v-if="hexMsg!=''"
                           v-on:click="pdfReport(hexMsg)">导出
                   </Button>
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:-50px;" v-if="hexMsg!=''"
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:-50px;"
+                          v-if="hexMsg!=''"
                           @click="cleanMeg()">清除
                   </Button>
                   <div id="hex" class="overflowY">
@@ -60,26 +63,47 @@
                   </div>
                 </TabPane>
 
-                <TabPane id="pdfDom1" label="报文解析" icon="clipboard">
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 175%;margin-top:-50px;" v-if="expMsg!=''"
+                <TabPane id="pdfDom1" label="报文解析" icon="clipboard" >
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 175%;margin-top:-50px;"
+                          v-if="expMsg!=''"
                           @click="pdfReport(expMsg)">导出
                   </Button>
-                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:-50px;" v-if="expMsg!=''"
+                  <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:-50px;"
+                          v-if="expMsg!=''"
                           @click="cleanMeg1()">清除
                   </Button>
-                  <div id="hex1" class="overflowY">
-                    <span align="left" v-for="(msg,index) in expMsg" :key="index">
+                  <div id="hex1" class="overflowY" style="color: black;font-style: revert">
+                    <div align="left" v-for="(msg,index) in expMsg" :key="index">
                       <div v-for="(msgn,index1) in (msg.split('\n'))">
                         <span v-if="index1!==0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                         {{msgn}}</div>
-                    </span>
+                    </div>
                   </div>
                 </TabPane>
               </Tabs>
             </Col>
             <Col span="5" pull="19" style="border-bottom: 1px solid darkgrey;">
-              <div class="tools_top1"  align="center">终端</div>
-              <Tree :data="tree" @on-check-change="choiceAll" ref="tree4" show-checkbox align="left"></Tree>
+              <div class="tools_top1" align="center">终端</div>
+              <!--<Tree :data="tree"   @on-check-change="choiceAll" ref="tree4" show-checkbox align="left"></Tree>-->
+              <RadioGroup v-model="ertuId"  vertical style="width: 100% ;" @on-change="choiceRadio">
+                <div v-for="(rad,index) in tree" :key="index" >
+                  <Menu style="width: 100%;height: 100%;">
+                    <Submenu name="1">
+                      <template slot="title">
+                        <Radio :label="rad.id" class="radio">{{rad.title}}</Radio>
+                      </template>
+                      <CheckboxGroup v-model="checkboxValue" @on-change="choiceCheckbox">
+                        <div v-for="(data,index) in rad.children" :key="index">
+                          <MenuItem name="1-1" style="line-height: 0px;padding: 0px 0px;color:black;border: 0px">
+                            <Checkbox :label="JSON.stringify(data)" class="checkbox">{{data.title}}</Checkbox>
+                          </MenuItem>
+                        </div>
+                      </CheckboxGroup>
+                    </Submenu>
+
+                  </Menu>
+                </div>
+              </RadioGroup>
             </Col>
           </Row>
         </div>
@@ -88,19 +112,31 @@
   </Col>
 </template>
 <script>
+
   export default {
+    created: function () {
+      this.loadTree();
+      if (this.$route.query.title == null) {
+        this.title = '指令下发';
+      } else {
+        this.title = this.$route.query.title;
+      }
+    },
+
+
     data() {
       return {
+        checkboxValue: [],
         htmlTitle: '页面导出PDF文件名',
         tree: [],
         instructs: [],
         networks: [],
         massages: [],
-        startMark: null,
-        endMark: null,
+        startAddr: null,
+        endAddr: null,
         startDateTime: null,
         endDateTime: null,
-        ertuId: null,
+        ertuId:null,
         instructId: null,
         networkId: null,
         tempMsg: [],
@@ -111,35 +147,38 @@
         taskParam: null,
         modal1: false,
         ws: null,
-        wsIsConnect:false,
+        wsIsConnect: false,
       }
     },
-    mounted() {
 
-    },
     methods: {
-      openTimer(){
-        this.timer = setInterval(()=>{
-          if(this.tempMsg.length>=0){
-            this.tempMsg.forEach((msg)=>{
+        objTList(obj) {
+        var list = [];
+        list.push(obj);
+        return list;
+      },
+      openTimer() {
+        this.timer = setInterval(() => {
+          if (this.tempMsg.length >= 0) {
+            this.tempMsg.forEach((msg) => {
               if (msg.code == 1) {
-                this.hexMsg.push(msg.message+"下行：" + msg.infoHex);
-                this.expMsg.push(msg.message+"下行：" + msg.infoExplain.replace(/-n/g, "\n"));
+                this.hexMsg.push(msg.message + "下行：" + msg.infoHex);
+                this.expMsg.push(msg.message + "下行：" + msg.infoExplain.replace(/-n/g, "\n"));
               } else if (msg.code == 2) {
-                this.hexMsg.push(msg.message+"上行：" + msg.infoHex);
-                this.expMsg.push(msg.message+"上行：" +msg.infoExplain.replace(/-n/g, "\n"));
+                this.hexMsg.push(msg.message + "上行：" + msg.infoHex);
+                this.expMsg.push(msg.message + "上行：" + msg.infoExplain.replace(/-n/g, "\n"));
               } else if (msg.code <= 0) {
                 this.hexMsg.push(msg.message);
-              }else if(msg.code==3){
+              } else if (msg.code == 3) {
                 this.hexMsg.push(msg.message);
                 this.wsIsConnect = false;
                 clearInterval(this.timer);
-                this.timer = null
+                this.timer = null
               }
             })
           }
           this.tempMsg = []
-        },100)
+        }, 100)
       },
 
       renderContent(h, {root, node, data}) {
@@ -203,48 +242,56 @@
           })
       },
 
-      loadData() {
-        this.$http(`/meter/getList`)
-          .then(res => {
-            if (res.data.status == 'success') {
-              this.tabData = res.data.results;
+      setMark(listTree){
+        this.checkboxValue = [];
+        this.startAddr = 0;
+        this.endAddr = 0;
+        listTree.forEach(node => {
+          this.checkboxValue.push(JSON.stringify(node));
+          if (this.startAddr == 0 && this.endAddr == 0) {
+            this.startAddr = node.modelId;
+            this.endAddr = node.modelId + 3;
+          } else {
+            if (node.modelId < this.startAddr) {
+              this.startAddr = node.modelId;
             }
-          })
+            if (node.modelId + 3 > this.endAddr) {
+              this.endAddr = node.modelId + 3;
+            }
+          }
+        });
       },
-      choiceAll: function (data) {
-        if (data[0] == null) {
-          this.tabData = [];
-          this.addProtocolId = '';
-        } else {
-          this.ertuId = data[0].id;
-          this.addProtocolId = data[0].modelId;
-          this.loadInstructs(this.addProtocolId);
-          this.loadNetworks(this.ertuId);
-          this.findProtocol(this.addProtocolId);
 
 
-          var meterTree = this.$refs.tree4.getCheckedNodes();
-          this.startMark = 0;
-          this.endMark = 0;
-          meterTree.forEach(node => {
-            if (node.children == null) {
-              if (this.startMark == 0 && this.endMark == 0) {
-                this.startMark = node.modelId;
-                this.endMark = node.modelId+3;
-              } else {
-                if (node.modelId < this.startMark) {
-                  this.startMark = node.modelId;
-                }
-                if (node.modelId+3 > this.endMark) {
-                  this.endMark = node.modelId+3;
-                }
-              }
-            }
-          });
-        }
+      choiceRadio: function (ertuId) {
+        var data;
+        this.tree.forEach(node=>{
+          if(node.id==ertuId){
+            data = node;
+          }
+        });
+
+        this.addProtocolId = data.modelId;
+        this.loadInstructs(this.addProtocolId);
+        this.loadNetworks(this.ertuId);
+        this.findProtocol(this.addProtocolId);
+
+        this.setMark(data.children);
+        // var meterTree = this.$refs.tree4.getCheckedNodes();
       },
+      choiceCheckbox(meterTrees) {
+        var meters = [];
+        meterTrees.forEach(node=>{
+          node = JSON.parse(node);
+          if(node.rootId == this.ertuId){
+            meters.push(node);
+          }
+        });
+        this.setMark(meters);
+      },
+
       sendButton() {
-        if(this.ertuId==null){
+        if (this.ertuId == null) {
           this.$Message.info("请在左侧勾选终端和电表！");
           return 0;
         } else if (this.instructId == null) {
@@ -287,8 +334,8 @@
           }
         });
         var obj = {
-          startMark: this.startMark,
-          endMark: this.endMark,
+          startAddr: this.startAddr,
+          endAddr: this.endAddr,
           startDate: this.startDateTime,
           endDate: this.endDateTime,
           restPath: this.protocol.restPath,
@@ -300,7 +347,7 @@
         };
         //调用web接口
         this.socket(JSON.stringify(obj));
-        console.log("startMark:" + obj.startMark + ",endMark:" + obj.endMark);
+        console.log("startAddr:" + obj.startAddr + ",endAddr:" + obj.endAddr);
       },
       cleanMeg() {
         this.hexMsg = [];
@@ -361,16 +408,6 @@
       },
     },
 
-    created: function () {
-      this.loadTree();
-      if (this.$route.query.title == null) {
-        this.title = '指令下发';
-      } else {
-        this.title = this.$route.query.title;
-      }
-    },
-    destroyed: function () {
-    },
   }
 </script>
 
@@ -547,12 +584,73 @@
     line-height: 30px;
   }
 
-  .overflowY{
-    overflow-y:scroll;
+  .overflowY {
+    overflow-y: scroll;
     position: absolute;
     -webkit-overflow-scrolling: touch;
-    width:100%;
+    width: 100%;
     align-content: left;
-    height:calc(100vh - 235px);
+    height: calc(100vh - 235px);
+  }
+
+  .radio {
+    line-height: 35px;
+    height: 35px;
+    width: 80%;
+    display: inline-block;
+    background: white;
+    z-index: 0;
+    margin-right: 0px;
+    font-size: 13px;
+  }
+  .radio:hover{
+    background:  rgb(201, 201, 201);
+  }
+
+  .checkbox {
+    padding: 0px 20px;
+    line-height: 30px;
+    height: 30px;
+    width: 100%;
+  }
+
+</style>
+
+<style scoped>
+
+  /*菜单的外层*/
+  li >>> .ivu-menu-submenu-title {
+    width: 100%;
+    padding: 0px 0px;
+    position: relative;
+    cursor: pointer;
+    z-index: 0;
+    transition: all .0s;
+  }
+
+  /*菜单的外层 > 符号*/
+  li>>>.ivu-menu-submenu-title-icon  {
+    width: 20%;
+    position: absolute;
+    text-align: center;
+    line-height: 35px;
+    margin-right: 0px;
+    top: 0px;
+  }
+  /*菜单栏 2级*/
+  li  >>>.ivu-checkbox-wrapper{
+    margin-right: 0px;
+  }
+
+  /*单选框 的 单选框图标*/
+  label  >>>.ivu-radio-input {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    opacity: 0;
+    cursor: pointer;
   }
 </style>

@@ -4,8 +4,10 @@
     <Row class="main" style="height:calc(100vh - 50px)">
       <sidebar />
       <keep-alive>       
-        <router-view :tableHeight="tableHeight"></router-view>     
-      </keep-alive>
+        <router-view :tableHeight="tableHeight" v-if="$route.meta.keepAlive"></router-view>   
+      </keep-alive>  
+        <router-view :tableHeight="tableHeight" v-if="$route.meta.keepAlive==null"></router-view>
+
     </Row>
     <!-- <foots /> -->
   </div>

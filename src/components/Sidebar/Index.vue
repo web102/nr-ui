@@ -317,7 +317,6 @@
     list-style-type: none;
     display: block;
     height: auto;
-    transform: .5s all;
   }
 
   .tree_ul > li {
