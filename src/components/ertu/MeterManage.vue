@@ -1,4 +1,4 @@
-<template>
+<template xmlns:Radio="http://www.w3.org/1999/html">
   <Col span="20">
     <div class="content_right">
       <div class="content_title">{{title}}</div>
@@ -33,7 +33,14 @@
             </Col>
             <Col span="5" pull="19" style="border-bottom:1px solid rgb(201, 201, 201);">
               <div class="tools_top1" align="center">终端</div>
-              <Tree :data="tree" @on-select-change="choiceAll" ref="tree4"  align="left"></Tree>
+              <!--<Tree :data="tree" @on-select-change="choiceAll" ref="tree4"  align="left"></Tree>-->
+              <RadioGroup v-model="addErtuId" vertical style="width: 100%;">
+                <Radio v-for="(data,index) in tree" :key="index" class="radio" :label="data.id">
+                  <div @click="choiceAll(data.id)" style="width: 100% ;height: 100% ;text-align: center;display: inline-block;text-align: left">
+                    {{data.title}}
+                  </div>
+                </Radio>
+              </RadioGroup>
             </Col>
           </Row>
         </div>
@@ -76,9 +83,9 @@
            <FormItem label="PT">
                <Input v-model="meter.pt" style="width:150px"/>
            </FormItem> -->
-          <FormItem label="终端">
+          <FormItem label="所属终端">
             <Select v-model="meter.ertuId" style="width:150px">
-              <Option :value="ertu.id" v-for="(ertu,index) of tree" :key="index+1">{{ertu.title}}</Option>
+              <Option :value="ertu.id" v-for="(ertu,index) of tree" :key="index">{{ertu.title}}</Option>
             </Select>
           </FormItem>
           <!-- <FormItem label="规约">
@@ -216,23 +223,23 @@
           //     align: 'center',
           //     ellipsis: true
           // },
-          {
-            title: '终端',
-            key: 'ertuId',
-            width: 95,
-            align: 'center',
-            ellipsis: true,
-            render: (h, params) => {
-              var value;
-              this.tree.forEach(function (element) {
-                if (element.id == params.row.ertuId) {
-                  value = element.title;
-                }
-              });
-
-              return h('div', value)
-            }
-          },
+          // {
+          //   title: '终端',
+          //   key: 'ertuId',
+          //   width: 95,
+          //   align: 'center',
+          //   ellipsis: true,
+          //   render: (h, params) => {
+          //     var value;
+          //     this.tree.forEach(function (element) {
+          //       if (element.id == params.row.ertuId) {
+          //         value = element.title;
+          //       }
+          //     });
+          //
+          //     return h('div', value)
+          //   }
+          // },
           // {
           //     title: '规约ID',
           //     key: 'protocolId',
@@ -384,9 +391,9 @@
           })
       },
       add() {
-        this.loadTree();
-        this.loadParamModels();
-        this.loadProtocols();
+        // this.loadTree();
+        // this.loadParamModels();
+        // this.loadProtocols();
         this.modal1 = true;
         this.meter = {
           ertuId: this.addErtuId,
@@ -446,16 +453,14 @@
         });
       },
       choiceAll: function (data) {
-        if (data[0] == null) {
-          this.tabData = [];
-          this.addErtuId = '';
-        } else {
-          this.addErtuId = data[0].id;
-          this.loadData(this.addErtuId)
+        if(data == this.addErtuId){
+          this.addErtuId='';
+        }else {
+          this.addErtuId = data;
         }
+        this.loadData();
       }
-    }
-    ,
+    },
     created: function () {
       this.loadTree();
       this.loadData()
@@ -466,8 +471,7 @@
       } else {
         this.title = this.$route.query.title;
       }
-    }
-    ,
+    },
   }
 </script>
 
@@ -583,7 +587,7 @@
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
     margin-left: 1px;
   }
@@ -592,7 +596,7 @@
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
   }
 
@@ -642,5 +646,19 @@
     border-radius: 5px;
     vertical-align: middle;
     line-height: 30px;
+  }
+
+
+  .radio {
+    padding: 0px 0px 0px 10px;
+    height: 35px;
+    line-height: 35px;
+    width: 100%;
+    margin-right: 0px;
+    font-size: 13px;
+    text-align: left;
+  }
+  .radio:hover {
+    background:  #DBEFFA;
   }
 </style>

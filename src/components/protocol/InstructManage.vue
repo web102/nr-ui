@@ -38,13 +38,9 @@
       <div style="text-align:center;">
         <Form ref="formInline" :model="instruct" :label-width="80" inline>
           <FormItem label="指令名称">
-                        <span style="position: absolute; right: -10px; color:red;"
-                              v-if="instruct.instructName===''">*</span>
             <Input v-model="instruct.instructName" style="width:200px;"/>
           </FormItem>
           <FormItem label="指令类型">
-                        <span style="position: absolute; right: -10px; color:red;"
-                              v-if="instruct.instructType===''">*</span>
             <Input v-model="instruct.instructType" style="width:200px"/>
           </FormItem>
           <FormItem label="标识">
@@ -184,8 +180,8 @@
         }
       },
       ok() {
-        if (this.instruct.instructName === '' || this.instruct.instructType === '') {
-          this.$Message.info("添加失败，必填数据不能为空")
+        if (this.instruct.instructName === '' || this.instruct.instructType === ''||this.instruct.instructType==='') {
+          this.$Message.info("请完善信息！")
         } else {
           var url = `/instruct/save`;
           this.$http(url, {params: this.instruct})
@@ -348,7 +344,7 @@
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
   }
 

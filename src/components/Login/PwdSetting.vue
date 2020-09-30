@@ -7,7 +7,7 @@
                     <span class="left">
                         账户名
                     </span>
-                    <Input v-model="userName" placeholder="新账户名" class="left" clearable style="width: 200px"/>
+                    <Input v-model="userName" placeholder="账户名" class="left" clearable style="width: 200px"/>
                 </li>
                 <li class="after">
                     <span class="left">
@@ -27,6 +27,9 @@
                     </span>
                     <Input v-model="comfirmPwd" type="password" placeholder="确认密码" class="left" clearable style="width: 200px"/>
                 </li>
+              <li>
+                <span style="text-align: center">{{msg}}</span>
+              </li>
                 <li class="after">
                     <Button type="primary" @click="update()">修改</Button>
                 </li>
@@ -43,35 +46,41 @@
                 oriPwd : '',
                 newPwd : '',
                 comfirmPwd : '',
+                msg:""
             }
         },
         methods:{
             update(){
-                if(this.userName != null && this.oriPwd != null && this.newPwd != null && this.comfirmPwd != null){
-                    if(this.comfirmPwd == this.newPwd){
-                        this.$Modal.confirm({
-                            title: "确认修改系统密码",
-                            content: "执行修改操作之后，可能影响系统功能，请谨慎操作！",
-                            onOk: () => {
-                                this.$http(`/user/update?username=${this.userName}&password=${this.oriPwd}&newPassword=${this.newPwd}`)
-                                .then(res=>{
-                                    if(res.data.status == 'success'){
-                                        this.$Message.info('操作成功！');
-                                        this.$router.push({ path: '/' })
-                                    }else{
-                                        this.$Message.info('操做失败！');
-                                    }
-                                })
-                            },
-                            onCancel: () => {
-                                this.$Message.info('您取消了添加操作！');
-                            }
-                        });
-                    }else{
-                        this.$Message.info('两次输入不一样，请确认密码的一致性！');
+                if(this.userName === "" || this.oriPwd !== ""  ||  this.newPwd !== ""  ||  this.comfirmPwd === ""){
+                  this.msg ="请完善信息！";
+                  setTimeout(() => {
+                    this.msg=null;
+                  }, 2000);
+                }else if(this.comfirmPwd !== this.newPwd){
+                  this.msg.info('密码不一致！');
+                  setTimeout(() => {
+                    this.msg=null;
+                  }, 2000);
+                } else {
+                  this.$Modal.confirm({
+                    onOk: () => {
+                      this.$http(`/user/update?username=${this.userName}&password=${this.oriPwd}&newPassword=${this.newPwd}`)
+                        .then(res => {
+                          if (res.data.status == 'success') {
+                            this.$Message.info('操作成功！');
+                            this.$router.push({path: '/'})
+                          } else {
+                            this.msg ="操作失败！";
+                            setTimeout(() => {
+                              this.msg=null;
+                            }, 2000);
+                          }
+                        })
+                    },
+                    onCancel: () => {
+                      this.$Message.info('您取消了添加操作！');
                     }
-                }else{
-                    this.$Message.info('密码都不能为空！');
+                  });
                 }
             }
         },
@@ -102,6 +111,7 @@
         line-height: 32px;
     }
     .after::after{
+      text-align: center;
         content:'';
         display: block;
         clear: both;
@@ -130,7 +140,6 @@
     }
     .ul_list>li span{
         width: 80px;
-        margin-right: 10px;
         font-size: 12px;
     }
     .picker{

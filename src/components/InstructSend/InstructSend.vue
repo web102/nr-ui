@@ -10,10 +10,12 @@
               <div class="tools_top">
                 <Row style="height: 30px">
                   <Col span="3">
-                    <Input type="text" id="startAddr" size="small"style="width: 100%" v-model="startAddr" placeholder="开始点号"/>
+                    <Input type="text" id="startAddr" size="small" style="width: 100%" v-model="startAddr"
+                           placeholder="开始点号"/>
                   </Col>
                   <Col span="3">
-                    <Input type="text" id="endAddr" size="small" style="width: 100%" :value="endAddr" placeholder="结束点号"/>
+                    <Input type="text" id="endAddr" size="small" style="width: 100%" :value="endAddr"
+                           placeholder="结束点号"/>
                   </Col>
                   <Col span="5" align="right">
                     <DatePicker type="datetime" size="small" placeholder="选择开始时间" @on-change="getStart"
@@ -24,7 +26,7 @@
                                 style="width: 90%"></DatePicker>
                   </Col>
                   <Col span="4">
-                    <Select v-model="networkId" placeholder="选择通道:" size="small" style="width:100%">
+                    <Select v-model="networkId" placeholder="选择网络:" size="small" style="width:100%">
                       <Option :value="network.channelId" v-for="(network,index) in networks" :key="index">
                         {{network.channelName}}
                       </Option>
@@ -46,7 +48,7 @@
               </div>
               <Tabs class="massage_panel"
                     style="background-color:#fff;margin-left: 1px;border-bottom:1px solid  rgb(201, 201, 201);">
-                <TabPane id="pdfDom" label="报文监测" icon="ios-monitor-outline" style="color: black">
+                <TabPane label="报文监测" icon="ios-monitor-outline" style="color: black">
                   <!--<Button type="primary" icon="printer" style="position:fixed;left: 68%;margin-top:-50px;"-->
                   <!--v-on:click="stop()" v-if="isConnect">停止-->
                   <!--</Button>-->
@@ -56,27 +58,28 @@
                   </Button>
                   <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 88%;margin-top:-50px;"
                           v-if="hexMsg!=''"
-                          @click="cleanMeg()">清除
+                          @click="hexMsg = []">清除
                   </Button>
                   <div id="hex" class="overflowY">
                     <p align="left" v-for="(msg,index) in hexMsg" :key="index">{{msg}}</p>
                   </div>
                 </TabPane>
 
-                <TabPane id="pdfDom1" label="报文解析" icon="clipboard" >
+                <TabPane label="报文解析" icon="clipboard" style="color: black">
                   <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 175%;margin-top:-50px;"
                           v-if="expMsg!=''"
                           @click="pdfReport(expMsg)">导出
                   </Button>
                   <Button type="primary" icon="ios-download-outline" style="position:fixed;left: 185%;margin-top:-50px;"
                           v-if="expMsg!=''"
-                          @click="cleanMeg1()">清除
+                          @click="expMsg = []">清除
                   </Button>
                   <div id="hex1" class="overflowY" style="color: black;font-style: revert">
-                    <div align="left" v-for="(msg,index) in expMsg" :key="index">
+                    <div v-for="(msg,index) in expMsg" :key="index">
                       <div v-for="(msgn,index1) in (msg.split('\n'))">
-                        <span v-if="index1!==0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                        {{msgn}}</div>
+                        <p align="left" v-if="index1!=0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{msgn}}</p>
+                        <p align="left" v-if="index1==0">{{msgn}}</p>
+                      </div>
                     </div>
                   </div>
                 </TabPane>
@@ -85,8 +88,8 @@
             <Col span="5" pull="19" style="border-bottom: 1px solid darkgrey;">
               <div class="tools_top1" align="center">终端</div>
               <!--<Tree :data="tree"   @on-check-change="choiceAll" ref="tree4" show-checkbox align="left"></Tree>-->
-              <RadioGroup v-model="ertuId"  vertical style="width: 100% ;" @on-change="choiceRadio">
-                <div v-for="(rad,index) in tree" :key="index" >
+              <RadioGroup v-model="ertuId" style="width: 100%;" @on-change="choiceRadio">
+                <div v-for="(rad,index) in tree" :key="index">
                   <Menu style="width: 100%;height: 100%;">
                     <Submenu name="1">
                       <template slot="title">
@@ -100,7 +103,6 @@
                         </div>
                       </CheckboxGroup>
                     </Submenu>
-
                   </Menu>
                 </div>
               </RadioGroup>
@@ -136,7 +138,7 @@
         endAddr: null,
         startDateTime: null,
         endDateTime: null,
-        ertuId:null,
+        ertuId: null,
         instructId: null,
         networkId: null,
         tempMsg: [],
@@ -152,7 +154,7 @@
     },
 
     methods: {
-        objTList(obj) {
+      objTList(obj) {
         var list = [];
         list.push(obj);
         return list;
@@ -216,24 +218,39 @@
           .then(res => {
             if (res.data.status === 'success') {
               this.instructs = res.data.results;
+              if (this.instructs.length == 0) {
+                this.$Modal.confirm({
+                  title: "提示",
+                  content: "此规约还没有配置指令，请先到 规约管理>规约管理 栏 点击‘指令’按钮进制配置指令！",
+                });
+              }
             } else {
               this.$Message.info("指令加载失败！");
             }
           });
       },
       loadNetworks(ertuId) {
-        this.network = null;
+        this.networkId = null;
         this.networks = [];
         this.$http(`/network/findNetworkByErtuId?ertuId=${ertuId}`)
           .then(res => {
             if (res.data.status === 'success') {
               this.networks = res.data.results;
+              if (this.networks.length == 0) {
+                this.$Modal.confirm({
+                  title: "提示",
+                  content: "此终端还没有添加网络，请先到 设备管理>网络管理 栏 点击‘添加’按钮进制添加网络！",
+                });
+                return true;
+              } else {
+                return false;
+              }
             } else {
-              this.$Message.info("网络通道加载失败！");
+              this.$Message.info("网络网络加载失败！");
             }
           });
       },
-      findProtocol(protocolId) {
+      loadProtocol(protocolId) {
         this.$http(`/protocol/findOne?id=${protocolId}`)
           .then(res => {
             if (res.data.status == 'success') {
@@ -241,8 +258,7 @@
             }
           })
       },
-
-      setMark(listTree){
+      setMark(listTree) {
         this.checkboxValue = [];
         this.startAddr = 0;
         this.endAddr = 0;
@@ -265,25 +281,28 @@
 
       choiceRadio: function (ertuId) {
         var data;
-        this.tree.forEach(node=>{
-          if(node.id==ertuId){
+        this.tree.forEach(node => {
+          if (node.id == ertuId) {
             data = node;
           }
         });
 
-        this.addProtocolId = data.modelId;
-        this.loadInstructs(this.addProtocolId);
+        this.loadProtocol(data.modelId);
+        this.loadInstructs(data.modelId);
         this.loadNetworks(this.ertuId);
-        this.findProtocol(this.addProtocolId);
+
 
         this.setMark(data.children);
         // var meterTree = this.$refs.tree4.getCheckedNodes();
       },
       choiceCheckbox(meterTrees) {
+        if (this.ertuId == null) {
+          this.ertuId = JSON.parse(node).rootId;
+        }
         var meters = [];
-        meterTrees.forEach(node=>{
+        meterTrees.forEach(node => {
           node = JSON.parse(node);
-          if(node.rootId == this.ertuId){
+          if (node.rootId == this.ertuId) {
             meters.push(node);
           }
         });
@@ -298,7 +317,7 @@
           this.$Message.info("请先选择指令！");
           return 0;
         } else if (this.networkId == null) {
-          this.$Message.info("请先选择通道！");
+          this.$Message.info("请先选择网络！");
           return 0;
         }
 
@@ -334,8 +353,8 @@
           }
         });
         var obj = {
-          startAddr: this.startAddr,
-          endAddr: this.endAddr,
+          startMark: this.startAddr,
+          endMark: this.endAddr,
           startDate: this.startDateTime,
           endDate: this.endDateTime,
           restPath: this.protocol.restPath,
@@ -349,13 +368,6 @@
         this.socket(JSON.stringify(obj));
         console.log("startAddr:" + obj.startAddr + ",endAddr:" + obj.endAddr);
       },
-      cleanMeg() {
-        this.hexMsg = [];
-      },
-      cleanMeg1() {
-        this.expMsg = [];
-      },
-
 
       getStart(date) {
         this.startDateTime = date;
@@ -523,7 +535,7 @@
     height: 65px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
     margin-left: 1px;
   }
@@ -532,7 +544,7 @@
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
   }
 
@@ -594,24 +606,26 @@
   }
 
   .radio {
-    line-height: 35px;
+    padding: 0px 0px 0px 10px;
     height: 35px;
+    line-height: 35px;
     width: 80%;
-    display: inline-block;
-    background: white;
     z-index: 0;
     margin-right: 0px;
     font-size: 13px;
+    text-align: left;
+    background: #DBEFFA;
   }
-  .radio:hover{
-    background:  rgb(201, 201, 201);
+
+  .radio:hover {
+    background: rgb(201, 201, 201);
   }
 
   .checkbox {
     padding: 0px 20px;
     line-height: 30px;
     height: 30px;
-    width: 100%;
+    width: 80%;
   }
 
 </style>
@@ -626,10 +640,12 @@
     cursor: pointer;
     z-index: 0;
     transition: all .0s;
+    text-align: left;
+    background: #DBEFFA;
   }
 
   /*菜单的外层 > 符号*/
-  li>>>.ivu-menu-submenu-title-icon  {
+  li >>> .ivu-menu-submenu-title-icon {
     width: 20%;
     position: absolute;
     text-align: center;
@@ -637,20 +653,15 @@
     margin-right: 0px;
     top: 0px;
   }
+
   /*菜单栏 2级*/
-  li  >>>.ivu-checkbox-wrapper{
+  li >>> .ivu-checkbox-wrapper {
     margin-right: 0px;
+    text-align: left;
   }
 
   /*单选框 的 单选框图标*/
-  label  >>>.ivu-radio-input {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
+  label >>> .ivu-radio-input {
     z-index: 0;
-    opacity: 0;
-    cursor: pointer;
   }
 </style>

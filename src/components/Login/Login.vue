@@ -23,34 +23,34 @@
       </div>
       <div class="title_bottom">报文解析</div>
     </div>
-    <Modal v-model="modal1" width="300px"
-           @on-ok="ok"
-           @on-cancel="cancel">
-      <p slot="header" style="color:#2d8cf0;text-align:center">
-        <span>账户注册</span>
-      </p>
-      <div style="text-align:center;">
+    <Modal v-model="modal1" width="300px">
+      <p slot="header" style="color:#f60;text-align:center"><span>用户注册</span></p>
+      <div  style="text-align:center;">
         <Form ref="formInline" :model="newUser" :label-width="60">
-          <FormItem label="用户名" >
-            <Input v-model="newUser.userName"></Input>
+          <FormItem label="账号名" >
+            <Input v-model="newUser.userName"/>
           </FormItem>
           <FormItem label="用户姓名">
-            <Input v-model="newUser.name"></Input>
+            <Input v-model="newUser.name"/>
           </FormItem>
-          <FormItem label="用户角色">
-            <Input v-model="newUser.role"></Input>
+          <FormItem label="注册秘钥">
+            <Input v-model="userKey"/>
           </FormItem>
           <FormItem label="联系方式">
-            <Input v-model="newUser.phone"></Input>
+            <Input v-model="newUser.phone"/>
           </FormItem>
           <FormItem label="登录密码">
-            <Input v-model="newUser.password"></Input>
+            <Input v-model="newUser.password"/>
           </FormItem>
           <FormItem label="确认密码">
-            <Input v-model="confirmPassword"></Input>
-            <span style="text-align: right;position: absolute;right: 0px" v-if="comparePwd">密码不一致</span>
+            <Input v-model="confirmPassword"/>
           </FormItem>
+          <span style="color: red">{{registerMsg}}</span>
         </Form>
+      </div>
+      <div slot="footer">
+        <Button type="text" size="large" @click="modal1=false">取消</Button>
+        <Button type="primary" size="large" @click="ok">确定</Button>
       </div>
     </Modal>
   </div>
@@ -60,37 +60,20 @@
   export default {
     data(){
       return{
+        userKey:'',
         uname : '',
         upwd : '',
         loginMsg:"",
+        registerMsg:"",
         modal1: false,
         newUser: {
           userName: '',
           name: '',
-          role:'',
           phone:'',
           password:''
         },
         confirmPassword:'',
-        comparePwd:false,
       }
-    },
-    watch:{
-      'confirmPassword'(){
-        if(this.newUser.password===this.confirmPassword){
-          this.comparePwd=false
-        }else{
-          this.comparePwd=true
-        }
-      },
-      'newUser.password'() {
-        if (this.newUser.password === this.confirmPassword||this.confirmPassword==='') {
-          this.comparePwd = false
-        } else {
-          this.comparePwd = true
-        }
-      }
-
     },
 
     methods: {
@@ -99,7 +82,7 @@
         this.$http(`/user/login?username=${this.uname}&password=${this.upwd}`)
           .then(res=>{
             if(res.data.status === "success"){
-              this.$router.push({ path: '/protocol', query: { user: this.uname , pwd : this.upwd }});
+              this.$router.push({ path: '/send', query: { user: this.uname , pwd : this.upwd }});
             }
             else if(res.data.status === "fail"){
               this.loginMsg=res.data.results;
@@ -111,32 +94,33 @@
           })
       },
       ok () {
-        if(this.newUser.userName!==''&&this.newUser.name!==''&&this.newUser.role!==''&&this.newUser.phone!==''&&this.newUser.password!==''&&this.confirmPassword!==''&&this.comparePwd===false){
+        if(this.userKey!=="root"){
+          this.registerMsg="秘钥错误！";
+          setTimeout(() => {
+            this.registerMsg=null;
+          }, 2000);
+        }else if(this.newUser.password!==this.confirmPassword){
+          this.registerMsg="密码不一致！";
+          setTimeout(() => {
+            this.registerMsg=null;
+          }, 2000);
+        }else if(this.newUser.userName!==''&&this.newUser.name!==''&&this.newUser.phone!==''&&this.newUser.password!==''){
           this.$http.post('/user/save',this.newUser)
             .then(res=>{
               this.$Message.info(res.data.results);
-            })
-            .catch(()=>{
-              this.$Message.info("连接异常！");
+              this.modal1 = false;
             })
         }else {
-          this.$Message.info('请完善信息！');
+          this.registerMsg="请完善信息！";
+          setTimeout(() => {
+            this.registerMsg=null;
+          }, 2000);
         }
       },
-      cancel () {
-        this.$Message.info('Clicked cancel');
-      },
+
       register(){
         this.modal1 = true;
-        this.newUser = {
-          userName: '',
-          name: '',
-          role:'',
-          phone:'',
-          password:'',
-        };
         this.confirmPassword='';
-        this.comparePwd=false
       }
     }
   };

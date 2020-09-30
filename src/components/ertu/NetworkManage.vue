@@ -31,7 +31,14 @@
                         </Col>
                         <Col span="5" pull="19" style="border-bottom:1px solid rgb(201, 201, 201);">
                             <div class="tools_top1"  align="center">终端</div>
-                            <Tree :data="tree" @on-select-change="choiceAll" ref="tree4"  align="left"></Tree>
+                            <!--<Tree :data="tree" @on-select-change="choiceAll" ref="tree4"  align="left"></Tree>-->
+                          <RadioGroup v-model="addErtuId" vertical style="width: 100%;">
+                            <Radio v-for="(data,index) in tree" :key="index" class="radio" :label="data.id">
+                              <div @click="choiceAll(data.id)" style="width: 100% ;height: 100% ;text-align: center;display: inline-block;text-align: left">
+                                {{data.title}}
+                              </div>
+                            </Radio>
+                          </RadioGroup>
                         </Col>
                     </Row>
                 </div>
@@ -45,7 +52,7 @@
             </p>
             <div style="text-align:center;">
                 <Form ref="formInline" :model="network" :label-width="80" inline>
-                    <FormItem label="通道名称">
+                    <FormItem label="网络名称">
                         <Input v-model="network.channelName" style="width:150px" :required="true"/>
                     </FormItem>
                     <FormItem label="IP地址">
@@ -54,6 +61,11 @@
                     <FormItem label="端口号">
                         <Input v-model="network.ipPort" style="width:150px"/>
                     </FormItem>
+                  <FormItem label="所属终端">
+                    <Select v-model="network.ertuId" style="width:150px">
+                      <Option :value="ertu.id" v-for="(ertu,index) of tree" :key="index">{{ertu.title}}</Option>
+                    </Select>
+                  </FormItem>
                 </Form>
             </div>
         </Modal>
@@ -90,7 +102,7 @@
                         ellipsis: true
                     },
                     {
-                        title: '通道名称',
+                        title: '网络名称',
                         key: 'channelName',
                         align: 'center',
                         width: 220,
@@ -141,7 +153,7 @@
                                     },
                                     on: {
                                         click: () => {
-                                            this.delete(params.row);
+                                            this.delete(params.row.channelId);
                                         }
                                     }
                                 }, '删除')
@@ -233,12 +245,12 @@
                         });
                 }
             },
-            delete(row) {
+            delete(networkId) {
                 this.$Modal.confirm({
                     title: "确认删除该条目",
                     content: "执行删除操作之后，可能影响系统功能，请谨慎操作！",
                     onOk: () => {
-                        this.$http(`/meter/delete?id=${row.meterId}`)
+                        this.$http(`/network/delete?id=${networkId}`)
                             .then(res => {
                                 if (res.data.status == 'success') {
                                     this.loadData();
@@ -253,17 +265,17 @@
                     }
                 });
             },
-            choiceAll: function (data) {
-                if (data[0] == null) {
-                    this.tabData = [];
-                    this.addErtuId = '';
-                } else {
-                    this.addErtuId = data[0].id;
-                    this.loadData(this.addErtuId)
-                }
+          choiceAll: function (data) {
+            if(data == this.addErtuId){
+              this.addErtuId='';
+            }else {
+              this.addErtuId = data;
             }
+            this.loadData();
+          }
         },
         created: function () {
+          this.loadData();
             this.loadTree();
             if (this.$route.query.title == null) {
                 this.title = '电表管理';
@@ -386,17 +398,17 @@
         height: 30px;
         vertical-align: middle;
         padding-top: 5px;
-        background: #DBEFFA;
+        background: #95d8ff;
         padding-left: 10px;
         margin-left: 1px;
     }
 
     .tools_top1 {
-        height: 30px;
-        vertical-align: middle;
-        padding-top: 5px;
-        background: #DBEFFA;
-        padding-left: 10px;
+      height: 30px;
+      vertical-align: middle;
+      padding-top: 5px;
+      background: #95d8ff;
+      padding-left: 10px;
     }
 
     .tools_search {
@@ -445,5 +457,18 @@
         border-radius: 5px;
         vertical-align: middle;
         line-height: 30px;
+    }
+
+    .radio {
+      padding: 0px 0px 0px 10px;
+      height: 35px;
+      line-height: 35px;
+      width: 100%;
+      margin-right: 0px;
+      font-size: 13px;
+      text-align: left;
+    }
+    .radio:hover {
+      background:  #DBEFFA;
     }
 </style>

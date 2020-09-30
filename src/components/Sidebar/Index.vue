@@ -9,7 +9,7 @@
                  :class="{btn_active : angle_btn_active[idx] , angle_active : angle_btn_active[idx] , btn_show : angle_btn_bottom[idx]}"
                  @click="menuBtn(idx)">{{item.btn}}
             </div>
-            <ul class="tree_ul" v-show="angle_btn_bottom[idx]" :style="angle_btn_bottom[idx]?height_show:height_hide">
+            <ul class="tree_ul" v-show="angle_btn_bottom[idx]" :style="angle_btn_bottom[idx]?height_show:height_hide" >
               <li v-for="(v,i) of item.li_list" :class="i==tree_li?'active':''" @click="li_click(i,v.path,v.name)">
                 {{v.name}}
               </li>
@@ -68,10 +68,10 @@
                 name: '规约管理',
                 path: '/protocol',
               },
-              {
-                name: '规约配置',
-                path: '/instructProtocol',
-              }
+              // {
+              //   name: '规约配置',
+              //   path: '/instructProtocol',
+              // }
             ]
           },
           // {
@@ -99,7 +99,7 @@
                 path: '/ertu',
               },
               {
-                name: '通道管理',
+                name: '网络管理',
                 path: '/network',
               },
               {
@@ -120,6 +120,8 @@
         ]
       }
     },
+    created(){
+  },
     methods: {
       spliceArr(arr, idx, len, obj) {
         arr.splice(idx, len, obj)

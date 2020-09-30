@@ -54,15 +54,25 @@
           <!--<FormItem label="链路地址">-->
             <!--<Input v-model="protocol.linkAddress" style="width:360px"/>-->
           <!--</FormItem>-->
-          <!--<FormItem label="规约模板">-->
-          <!--<span style="position: absolute; right: -10px; color:red;" v-if="protocol.protocolModelId===''">*</span>-->
-          <!--<Select v-model="protocol.protocolModelId" style="width:200px">-->
-          <!--<Option :value="instructModel.modelId" v-for="(instructModel,index) in instructModels" :key="index+1">-->
-          <!--{{instructModel.modelName}}-->
-          <!--</Option>-->
-          <!--</Select>-->
-          <!--</FormItem>-->
         </Form>
+      </div>
+    </Modal>
+
+    <Modal v-model="modal2" width="500px"
+           @on-ok="ok1"
+           @on-cancel="cancel1">
+      <p slot="header" style="color:#2d8cf0;text-align:center">
+        <span>指令选择</span>
+      </p>
+      <div>
+        <details v-for="(value,key) in instructAll" style="border: 0px">
+          <Summary class="summary">{{key}}</Summary>
+          <CheckboxGroup  v-model="protocolInstructs" >
+            <Checkbox v-for="(list,index) in value" :label=list.instructId :key="index" class="checkbox">
+              <span>{{list.instructPath}}:{{list.instructName}}</span>
+            </Checkbox>
+          </CheckboxGroup>
+        </details>
       </div>
     </Modal>
   </Col>
@@ -71,7 +81,7 @@
   export default {
     data() {
       return {
-        changeProtocolModelId: '',
+        tabData: [],
         protocol: {
           protocolName: '',
           protocolAlias: '',
@@ -80,19 +90,11 @@
           protocolModelId: '',
           linkAddress: '',
         },
-        loading: true,
         title: '',
         modal1: false,
-        change: true,
-        height_hide: {
-          height: '0px',
-          transform: '.5s all',
-        },
-        height_show: {
-          height: 'auto',
-          transform: '.5s all',
-          overflow: 'hidden'
-        },
+        modal2: false,
+        protocolInstructs:[],
+        instructAll: [],
         comment_content: '',
         columns: [
           {
@@ -138,26 +140,10 @@
           //   ellipsis: true
           // },
           // {
-          //     title: '指令模板',
-          //     key: 'protocolModelId',
-          //     width: 110,
-          //     align: 'center',
-          //     ellipsis: true,
-          //     render: (h, params) => {
-          //       var value;
-          //       this.instructModels.forEach(function (element) {
-          //         if(element.modelId == params.row.protocolModelId){
-          //                 value = element.modelName;
-          //               }
-          //       });
-          //
-          //       return h('div',value)
-          //     }
-          // },
           {
             title: '操作',
             key: 'action',
-            width: 140,
+            width: 180,
             align: 'center',
             fixed: 'right',
             render: (h, params) => {
@@ -174,10 +160,24 @@
                     click: () => {
                       this.modal1 = true;
                       this.protocol = params.row;
-                      this.changeProtocolModelId = params.row.protocolModelId;
                     }
                   }
                 }, '修改'),
+                h('Button', {
+                  props: {
+                    type: 'success',
+                    size: 'small'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.protocol = params.row;
+                      this.set();
+                    }
+                  }
+                }, '指令'),
                 h('Button', {
                   props: {
                     type: 'error',
@@ -192,14 +192,6 @@
               ]);
             }
           }
-        ],
-        tabData: [],
-        instructModels: [
-          {
-            modelId: '',
-            modelName: '',
-            modelDesc: ''
-          },
         ],
       }
     },
@@ -232,11 +224,10 @@
       },
       add() {
         this.modal1 = true;
-        this.change = false;
         this.protocol = {};
       },
       ok() {
-        if (this.protocol.protocolName === '' || this.protocol.protocolModelId === '') {
+        if (this.protocol.protocolName === '') {
           this.$Message.info("添加失败，必填数据不能为空")
         }
         else {
@@ -255,7 +246,46 @@
         }
       },
       cancel() {
-        this.change = true;
+        this.$Message.info('您取消了添加操作！');
+      },
+
+
+      loadInstructAll() {
+        this.$http(`/instruct/instructSortByType`)
+          .then(res => {
+            if (res.data.status === 'success') {
+              this.instructAll = res.data.results;
+            }
+          })
+      },
+
+      loadProtocolInstruct() {
+        this.$http(`/instructProtocolSet/protocolInstruct?protocolId=${this.protocol.protocolId}`)
+          .then(res => {
+            if (res.data.status === 'success') {
+              for (let instruct of res.data.results) {
+                this.protocolInstructs.push(instruct.instructId)
+              }
+            }
+          })
+      },
+
+      set(){
+        this.modal2 = true;
+        this.loadInstructAll();
+        this.loadProtocolInstruct()
+      },
+      ok1() {
+        this.$http(`/instructProtocolSet/add?protocolId=${this.protocol.protocolId}&instructIds=${this.protocolInstructs}`)
+          .then(res => {
+            if (res.data.status === 'success') {
+              this.$Message.info('操作成功！');
+            } else {
+              this.$Message.info('操作失败！');
+            }
+          })
+      },
+      cancel1() {
         this.$Message.info('您取消了添加操作！');
       },
       delete(row) {
@@ -278,29 +308,6 @@
           }
         });
       },
-    },
-    watch: {
-      'protocol.protocolModelId'() {
-        if (this.protocol.protocolModelId !== '' && this.protocol.protocolModelId !== this.changeProtocolModelId && this.change) {
-          this.$Modal.confirm({
-            title: '确定修改规约模板吗？',
-            content: '修改后，此规约的原来存储的指令将会立即被删除！',
-            onOk: () => {
-              this.$http(`/instructProtocolSet/deleteByProtocolId?protocolId=${this.protocol.protocolId}`)
-                .then(res => {
-                  if (res.data.status == 'success') {
-                    this.$Message.info('清除成功！');
-                  } else {
-                    this.$Message.info('清除失败！');
-                  }
-                })
-            },
-            onCancel: () => {
-              this.protocol.protocolModelId = this.changeProtocolModelId;
-            }
-          });
-        }
-      }
     },
     created: function () {
       this.loadData();
@@ -425,7 +432,7 @@
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
   }
 
@@ -475,5 +482,26 @@
     border-radius: 5px;
     vertical-align: middle;
     line-height: 30px;
+  }
+
+  .summary{
+    background:  #DBEFFA;
+    height: 30px;
+    line-height: 30px;
+    border: 0px;
+  }
+
+  .summary:hover {
+    background: #95d8ff;
+  }
+
+  .checkbox{
+    width: 100%;
+    height: 25px;
+    line-height: 30px;
+    padding: 0px 10px;
+  }
+  .checkbox:hover{
+    background:  #DBEFFA;
   }
 </style>

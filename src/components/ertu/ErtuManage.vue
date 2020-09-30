@@ -462,7 +462,7 @@
         height: 30px;
         vertical-align: middle;
         padding-top: 5px;
-        background: #DBEFFA;
+        background: #95d8ff;
         padding-left: 10px;
     }
 

@@ -50,7 +50,7 @@ export default new Router({
       },
     {
       path : '/send',  //指令下发 => 指令下发
-      component : require('@/components/InstructSend/InstructSend').default,
+      component : require('@/components/instructSend/InstructSend').default,
       meta: {
         keepAlive: true // 需要被缓存
       }

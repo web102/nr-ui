@@ -31,7 +31,10 @@
             </Col>
             <Col span="5" pull="19"style="border-bottom:1px solid rgb(201, 201, 201);">
               <div class="tools_top1" align="center">规约</div>
-              <Tree :data="data1" @on-select-change="choiceAll" ref="tree4" align="left"></Tree>
+              <!--<Tree :data="data1" @on-select-change="choiceAll" ref="tree4" align="left"></Tree>-->
+              <RadioGroup v-model="addProtocolId" vertical style="width: 100%;" @on-change="loadData">
+                <Radio v-for="(data,index) in data1" :key="index" class="radio" :label="data.id">{{data.title}}</Radio>
+              </RadioGroup>
             </Col>
           </Row>
         </div>
@@ -44,10 +47,10 @@
         <span>指令选择</span>
       </p>
       <div>
-        <details v-for="(value,key) in instructAll">
-          <summary>{{key}}</summary>
-          <CheckboxGroup v-model="checkedNames">
-            <Checkbox v-for="(list,index) in value" :label=list.instructId :key="index">
+        <details v-for="(value,key) in instructAll" style="border: 0px">
+          <Summary class="summary">{{key}}</Summary>
+          <CheckboxGroup  v-model="checkedNames" >
+            <Checkbox v-for="(list,index) in value" :label=list.instructId :key="index" class="checkbox">
               <span>{{list.instructPath}}:{{list.instructName}}</span>
             </Checkbox>
           </CheckboxGroup>
@@ -65,7 +68,6 @@
         instructModel: [],
         addProtocolId: '',
         // addModelId: '',
-        instructAll: [],
         instructAll: [],
         checkedNames: [],
         loading: true,
@@ -249,17 +251,6 @@
           }
         });
       },
-      choiceAll: function (data) {
-        if (data[0] == null) {
-          this.tabData = [];
-          this.addProtocolId = '';
-          // this.addModelId = '';
-        } else {
-          this.addProtocolId = data[0].id;
-          // this.addModelId = data[0].modelId;
-          this.loadData(this.addProtocolId)
-        }
-      }
     },
     created: function () {	//页面创建前
       this.loadTree();
@@ -384,7 +375,7 @@
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
     margin-left: 1px;
   }
@@ -393,7 +384,7 @@
     height: 30px;
     vertical-align: middle;
     padding-top: 5px;
-    background: #DBEFFA;
+    background: #95d8ff;
     padding-left: 10px;
   }
 
@@ -443,5 +434,39 @@
     border-radius: 5px;
     vertical-align: middle;
     line-height: 30px;
+  }
+
+  .summary{
+    background:  #DBEFFA;
+    height: 30px;
+    line-height: 30px;
+    border: 0px;
+  }
+
+  .summary:hover {
+    background: #95d8ff;
+  }
+
+  .checkbox{
+    width: 100%;
+    height: 25px;
+    line-height: 30px;
+    padding: 0px 10px;
+  }
+  .checkbox:hover{
+    background:  #DBEFFA;
+  }
+
+  .radio {
+    padding: 0px 0px 0px 10px;
+    height: 35px;
+    line-height: 35px;
+    width: 100%;
+    margin-right: 0px;
+    font-size: 13px;
+    text-align: left;
+  }
+  .radio:hover {
+    background:  #DBEFFA;
   }
 </style>
