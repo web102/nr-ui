@@ -24,7 +24,7 @@
             </Col>
           </Row>
         </div>
-        <div class="tab_content">
+        <div class="tab_content" v-if="show">
           <Table class="tab" :columns="columns" :data="tabData" ellipsis border :height="tableHeight" highlight-row></Table>
         </div>
       </div>
@@ -55,6 +55,7 @@
   export default {
     data() {
       return {
+        show:true,
         instruct: {
           instructName: '',
           instructType: '',
@@ -147,10 +148,14 @@
 
     methods: {
       loadData() {
-        this.$http(`/instruct/findAll`)
+        this.tabData=[];
+        this.$http(`/instruct/instructSortByType`)
           .then(res => {
             if (res.data.status === 'success') {
-              this.tabData = res.data.results;
+              var map = res.data.results;
+              for (var key in map) {
+                this.tabData.push.apply(this.tabData,map[key]);
+              }
             }
           })
       },
