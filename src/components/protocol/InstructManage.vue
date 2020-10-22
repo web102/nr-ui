@@ -29,7 +29,7 @@
         </div>
       </div>
     </div>
-    <Modal v-model="modal1" width="360px"
+    <Modal v-model="modal1" width="560px"
            @on-ok="ok"
            @on-cancel="cancel">
       <p slot="header" style="color:#2d8cf0;text-align:center">
@@ -38,13 +38,20 @@
       <div style="text-align:center;">
         <Form ref="formInline" :model="instruct" :label-width="80" inline>
           <FormItem label="指令名称">
-            <Input v-model="instruct.instructName" style="width:200px;"/>
+            <Input v-model="instruct.instructName" style="width:400px;"/>
           </FormItem>
           <FormItem label="指令类型">
-            <Input v-model="instruct.instructType" style="width:200px"/>
+            <Input v-model="instruct.instructType" style="width:400px"/>
           </FormItem>
-          <FormItem label="标识">
-            <Input v-model="instruct.instructPath" style="width:200px"/>
+          <FormItem label="指令标识">
+            <Input v-model="instruct.instructPath" style="width:400px"/>
+          </FormItem>
+          <FormItem label="指令结构">
+            <Select v-model="instruct.instructFrame"  style="width:400px">
+              <Option :value="k" v-for="(v,k) in selectInstructFrame" :key="k">
+                {{v}}
+              </Option>
+            </Select>
           </FormItem>
         </Form>
       </div>
@@ -56,10 +63,12 @@
     data() {
       return {
         show:true,
+        selectInstructFrame:{"0":"无参数/最早","1":"某时刻","3":"选定时间","10":"最早选定地址","11":"某时刻选定地址","12":"选定时间选定地址","13":"选定时间选定地址 日/月"},
         instruct: {
           instructName: '',
           instructType: '',
           instructPath: '',
+          instructFrame: '',
         },
         loading: true,
         title: '',
@@ -97,9 +106,15 @@
             ellipsis: true
           },
           {
-            title: '标识',
+            title: '指令标识',
             key: 'instructPath',
             width: 80,
+            align: 'center',
+            ellipsis: true
+          },{
+            title: '指令结构',
+            key: 'instructFrame',
+            width: 90,
             align: 'center',
             ellipsis: true
           },
@@ -148,6 +163,7 @@
 
     methods: {
       loadData() {
+        this.show = false;
         this.tabData=[];
         this.$http(`/instruct/instructSortByType`)
           .then(res => {
@@ -156,6 +172,7 @@
               for (var key in map) {
                 this.tabData.push.apply(this.tabData,map[key]);
               }
+              this.show = true;
             }
           })
       },
@@ -196,13 +213,11 @@
               } else {
                 this.$Message.info('操作失败！');
               }
-              this.loadData();
             })
         }
       },
       cancel() {
         this.$Message.info('您取消了添加操作！');
-        this.loadData();
       },
       delete(row) {
         this.$Modal.confirm({

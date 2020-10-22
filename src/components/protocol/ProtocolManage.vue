@@ -58,7 +58,7 @@
       </div>
     </Modal>
 
-    <Modal v-model="modal2" width="500px"
+    <Modal v-model="modal2" width="600px"
            @on-ok="ok1"
            @on-cancel="cancel1">
       <p slot="header" style="color:#2d8cf0;text-align:center">

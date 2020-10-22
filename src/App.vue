@@ -49,7 +49,7 @@
 
 <style>
   #app{
-    min-width:500px;
+    min-width:700px;
   }
   .content_main{
     height:calc(100vh - 80px) !important;

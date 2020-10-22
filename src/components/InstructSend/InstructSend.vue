@@ -9,21 +9,12 @@
             <Col span="19" push="5" style="background-color: #C9C9C9; ">
               <div class="tools_top">
                 <Row style="height: 30px">
-                  <Col span="3">
-                    <Input type="text" id="startAddr" size="small" style="width: 100%" v-model="startAddr"
-                           placeholder="开始点号"/>
-                  </Col>
-                  <Col span="3">
-                    <Input type="text" id="endAddr" size="small" style="width: 100%" :value="endAddr"
-                           placeholder="结束点号"/>
-                  </Col>
-                  <Col span="5" align="right">
-                    <DatePicker type="datetime" size="small" placeholder="选择开始时间" @on-change="getStart"
-                                style="width: 90%"></DatePicker>
-                  </Col>
-                  <Col span="5" align="left">
-                    <DatePicker type="datetime" size="small" placeholder="选择结束时间" @on-change="getEnd"
-                                style="width: 90%"></DatePicker>
+                  <Col span="13" align="left">
+                    <Select v-model="instructId" placeholder="选择指令:" size="small" style="width:100%">
+                      <Option :value="ins.instructId" v-for="(ins,index) in instructs" :key="index">
+                        {{ins.instructPath}}:{{ins.instructName}}
+                      </Option>
+                    </Select>
                   </Col>
                   <Col span="4">
                     <Select v-model="networkId" placeholder="选择网络:" size="small" style="width:100%">
@@ -32,17 +23,32 @@
                       </Option>
                     </Select>
                   </Col>
-                </Row>
-                <Row style="height: 30px">
-                  <Col span="17" align="left">
-                    <Select v-model="instructId" placeholder="选择指令:" size="small" style="width:100%">
-                      <Option :value="ins.instructId" v-for="(ins,index) in instructs" :key="index">
-                        {{ins.instructPath}}:{{ins.instructName}}
-                      </Option>
-                    </Select>
-                  </Col>
-                  <Col span="3" align="right">
+                  <Col span="2" align="right">
                     <div class="tools_search" @click="sendButton()">下发</div>
+                  </Col>
+                </Row>
+                <Row style="height: 20px">
+                  <Col span="2">
+                    <Input type="text" id="startAddr" size="small" style="width: 100%;text-align: left;" v-model="startAddr" v-if="instructFrame>=10"
+                           placeholder="开始点号"/>
+                  </Col>
+                  <Col span="2">
+                    <Input type="text" id="endAddr" size="small" style="width: 100%" :value="endAddr " v-if="instructFrame>=10"
+                           placeholder="结束点号"/>
+                  </Col>
+                  <Col span="5" align="right">
+                    <DatePicker type="datetime" size="small" placeholder="选择开始时间" @on-change="getStart" v-if="instructFrame%10>0"
+                                style="width: 90%"></DatePicker>
+                  </Col>
+                  <Col span="5" align="left">
+                    <DatePicker type="datetime" size="small" placeholder="选择结束时间" @on-change="getEnd" v-if="instructFrame%10>1"
+                                style="width: 90%"></DatePicker>
+                  </Col>
+
+                  <Col span="3" align="left">
+                    <Select v-model="rad" filterable remote :remote-method="createRad"  placeholder="记录地址:" size="small" style="width:100%"  v-if="instructFrame%10===2">
+                      <Option :value="k" v-for="(v,k) in selectRad" :key="k">{{v}}</Option>
+                    </Select>
                   </Col>
                 </Row>
               </div>
@@ -98,7 +104,9 @@
                       <CheckboxGroup v-model="checkboxValue" @on-change="choiceCheckbox">
                         <div v-for="(data,index) in rad.children" :key="index">
                           <MenuItem name="1-1" style="line-height: 0px;padding: 0px 0px;color:black;border: 0px">
-                            <Checkbox :label="JSON.stringify(data)" class="checkbox">{{data.title}}</Checkbox>
+                            <Checkbox :label="JSON.stringify(data)" class="checkbox" v-if="instructFrame>=10">
+                              {{data.title}}
+                            </Checkbox>
                           </MenuItem>
                         </div>
                       </CheckboxGroup>
@@ -125,9 +133,11 @@
       }
     },
 
-
     data() {
       return {
+        rad: null,
+        selectRad:{"11":"5分钟","12":"15分钟","13":"30分钟","21":"日冻结","41":"月冻结"},
+        instructFrame:0,
         checkboxValue: [],
         htmlTitle: '页面导出PDF文件名',
         tree: [],
@@ -140,6 +150,7 @@
         endDateTime: null,
         ertuId: null,
         instructId: null,
+        instruct: null,
         networkId: null,
         tempMsg: [],
         hexMsg: [],
@@ -151,6 +162,16 @@
         ws: null,
         wsIsConnect: false,
       }
+    },
+    watch:{
+      instructId(val){//普通的watch监听
+        this.instructs.forEach((nw) => {
+          if (nw.instructId === this.instructId) {
+            this.instruct = nw;
+            this.instructFrame = this.instruct.instructFrame;
+          }
+        });
+      },
     },
 
     methods: {
@@ -183,28 +204,22 @@
         }, 100)
       },
 
-      renderContent(h, {root, node, data}) {
-        return h('span', {
-          style: {
-            display: 'inline-block',
-            width: '100%'
+
+      createRad(val){
+
+        for (var key in this.selectRad) {
+          if(this.selectRad[key]===val){
+            this.rad = key;
+            return;
           }
-        }, [
-          h('span', [
-            h('Icon', {
-              props: {
-                type: 'ios-paper-outline'
-              },
-              style: {
-                marginRight: '8px'
-              }
-            }),
-            h('span', data.title)
-          ])
-        ]);
+        }
+        console.log(val);
+        this.selectRad[val]=val;
+        this.rad = val;
       },
+
       loadTree() {
-        this.$http(`/ertu/ertuMeterTree?idIsNull=false`)
+        this.$http(`/ertu/ertuMeterTree`)
           .then(res => {
             if (res.data.status === 'success') {
               this.tree = res.data.results.children;
@@ -337,14 +352,9 @@
           this.start()
         }
       },
+
       start() {
         this.openTimer();
-        var instruct = {};
-        this.instructs.forEach((nw) => {
-          if (nw.instructId === this.instructId) {
-            instruct = nw;
-          }
-        });
 
         var network = {};
         this.networks.forEach((nw) => {
@@ -358,15 +368,14 @@
           startDate: this.startDateTime,
           endDate: this.endDateTime,
           restPath: this.protocol.restPath,
-          taskType: instruct.instructPath,
+          taskType: this.instruct.instructPath,
           ipAddress: network.ipAddress,
           ipPort: network.ipPort,
           channel: null,
-          red: 0,
+          rad: this.rad,
         };
         //调用web接口
         this.socket(JSON.stringify(obj));
-        console.log("startAddr:" + obj.startAddr + ",endAddr:" + obj.endAddr);
       },
 
       getStart(date) {
@@ -419,6 +428,7 @@
           });
       },
     },
+
 
   }
 </script>
@@ -550,7 +560,7 @@
 
   .tools_search {
     display: inline-block;
-    width: 60px;
+    width: 80%;
     height: 22px;
     line-height: 22px;
     background-color: #2d8cf0;
