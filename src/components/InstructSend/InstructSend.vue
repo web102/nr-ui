@@ -33,7 +33,7 @@
                            placeholder="开始点号"/>
                   </Col>
                   <Col span="2">
-                    <Input type="text" id="endAddr" size="small" style="width: 100%" :value="endAddr " v-if="instructFrame>=10"
+                    <Input type="text" id="endAddr" size="small" style="width: 100%" v-model="endAddr " v-if="instructFrame>=10"
                            placeholder="结束点号"/>
                   </Col>
                   <Col span="5" align="right">
@@ -136,7 +136,7 @@
     data() {
       return {
         rad: null,
-        selectRad:{"11":"5分钟","12":"15分钟","13":"30分钟","21":"日冻结","41":"月冻结"},
+        selectRad:{"11":"30分钟","12":"15分钟","13":"5分钟","21":"日冻结","41":"月冻结"},
         instructFrame:0,
         checkboxValue: [],
         htmlTitle: '页面导出PDF文件名',
